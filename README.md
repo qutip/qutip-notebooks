@@ -25,30 +25,30 @@ http://nbviewer.ipython.org:
 
 # Example notebooks
 
- * [example-rabi-oscillations](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-rabi-oscillation.ipynb)
+ * [example-rabi-oscillations](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-rabi-oscillations.ipynb)
 
 # Development notebooks
 
 ## Feature demo notebooks
 
  * [development-continuous-variable-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-continuous-variable-test.ipynb)
- * [development-ipynbtools-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--ipynbtools-test.ipynb)
- * [development-mesolve-and-liouvillians](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--mesolve-and-liouvillians.ipynb)
- * [development-correlation-functions](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--correlation-functions.ipynb)
- * [development-liouvillian-construction](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--liouvillian-construction.ipynb)
- * [development-floquet-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--floquet-test.ipynb)
- * [development-mcf90-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--mcf90-test.ipynb)
- * [development-spectrum-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--spectrum-test.ipynb)
- * [development-Qobj-extract-eliminate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--Qobj-extract-eliminate.ipynb)
+ * [development-ipynbtools-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-ipynbtools-test.ipynb)
+ * [development-mesolve-and-liouvillians](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mesolve-and-liouvillians.ipynb)
+ * [development-correlation-functions](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-correlation-functions.ipynb)
+ * [development-liouvillian-construction](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-liouvillian-construction.ipynb)
+ * [development-floquet-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-floquet-test.ipynb)
+ * [development-mcf90-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mcf90-test.ipynb)
+ * [development-spectrum-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-spectrum-test.ipynb)
+ * [development-Qobj-extract-eliminate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-Qobj-extract-eliminate.ipynb)
 
 ### Stochastic solvers
 
- * [development-smesolve-tests](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--smesolve-tests.ipynb)
- * [development-smesolve-inefficient-detection](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--smesolve-inefficient-detection.ipynb)
+ * [development-smesolve-tests](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-tests.ipynb)
+ * [development-smesolve-inefficient-detection](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-inefficient-detection.ipynb)
 
 
 ## Benchmark notebooks
 
- * [development-benchmark-steadystate-1](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--steadystate-solver-benchmarks-1.ipynb)
- * [development-benchmark-steadystate-2](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development--steadystate-solver-benchmarks-2.ipynb)
+ * [development-benchmark-steadystate-1](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-steadystate-solver-benchmarks-1.ipynb)
+ * [development-benchmark-steadystate-2](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-steadystate-solver-benchmarks-2.ipynb)
 
