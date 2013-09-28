@@ -33,13 +33,18 @@ http://nbviewer.ipython.org:
 
  * [development-continuous-variable-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-continuous-variable-test.ipynb)
  * [development-ipynbtools-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-ipynbtools-test.ipynb)
- * [development-mesolve-and-liouvillians](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mesolve-and-liouvillians.ipynb)
  * [development-correlation-functions](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-correlation-functions.ipynb)
  * [development-liouvillian-construction](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-liouvillian-construction.ipynb)
  * [development-floquet-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-floquet-test.ipynb)
  * [development-mcf90-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mcf90-test.ipynb)
  * [development-spectrum-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-spectrum-test.ipynb)
  * [development-Qobj-extract-eliminate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-Qobj-extract-eliminate.ipynb)
+
+### Master equation solver
+
+ * [development-mesolve-and-liouvillians](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mesolve-and-liouvillians.ipynb)
+ * [development-mesolve-expectation-values](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mesolve-expectation-values.ipynb)
+
 
 ### Stochastic solvers
 
