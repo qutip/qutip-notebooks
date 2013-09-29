@@ -26,6 +26,15 @@ http://nbviewer.ipython.org:
 # Example notebooks
 
  * [example-rabi-oscillations](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-rabi-oscillations.ipynb)
+ * [example-atom-cavity-correlation-function](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-atom-cavity-correlation-function.ipynb)
+ * [example-atom-cavity-dynamics](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-atom-cavity-dynamics.ipynb)
+ * [example-JC-model-wigner-function](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-JC-model-wigner-function.ipynb)
+ * [example-wigner-functions](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-wigner-functions.ipynb)
+ * [example-trilinear](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-trilinear.ipynb)
+ * [example-ultrastrong-coupling-groundstate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-ultrastrong-coupling-groundstate.ipynb)
+ * [example-landau-zener](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-landau-zener.ipynb)
+ * [example-quantum-process-tomography](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-process-tomography.ipynb)
+ * [example-spin-chain](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain.ipynb)
 
 # Development notebooks
 
@@ -56,4 +65,5 @@ http://nbviewer.ipython.org:
 
  * [development-benchmark-steadystate-1](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-steadystate-solver-benchmarks-1.ipynb)
  * [development-benchmark-steadystate-2](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-steadystate-solver-benchmarks-2.ipynb)
+
 
