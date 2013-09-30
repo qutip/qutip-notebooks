@@ -60,6 +60,8 @@ http://nbviewer.ipython.org:
  * [development-smesolve-tests](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-tests.ipynb)
  * [development-smesolve-inefficient-detection](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-inefficient-detection.ipynb)
  * [development-smesolve-heterodyne](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-heterodyne.ipynb)
+ * [development-smesolve-milstein-speed-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-milstein-speed-test.ipynb)
+
 
 ## Benchmark notebooks
 
