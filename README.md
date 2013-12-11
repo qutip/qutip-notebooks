@@ -36,6 +36,10 @@ http://nbviewer.ipython.org:
  * [example-quantum-process-tomography](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-process-tomography.ipynb)
  * [example-spin-chain](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain.ipynb)
 
+### Bloch-Redfield master equation solver
+
+ * [example-brmesolve](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve.ipynb)
+
 # Development notebooks
 
 ## Feature demo notebooks
