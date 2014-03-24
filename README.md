@@ -39,6 +39,7 @@ http://nbviewer.ipython.org:
 ### Bloch-Redfield master equation solver
 
  * [example-brmesolve](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve.ipynb)
+ * [example-brmesolve-steadystate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve-steadystate.ipynb)
 
 # Development notebooks
 
