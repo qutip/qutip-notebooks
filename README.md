@@ -53,6 +53,7 @@ http://nbviewer.ipython.org:
  * [development-mcf90-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-mcf90-test.ipynb)
  * [development-spectrum-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-spectrum-test.ipynb)
  * [development-Qobj-extract-eliminate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-Qobj-extract-eliminate.ipynb)
+ * [development-visualization-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-visualization-test.ipynb)
 
 ### Master equation solver
 
