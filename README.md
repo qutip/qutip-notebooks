@@ -35,6 +35,7 @@ http://nbviewer.ipython.org:
  * [example-landau-zener](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-landau-zener.ipynb)
  * [example-quantum-process-tomography](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-process-tomography.ipynb)
  * [example-spin-chain](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain.ipynb)
+ * [example-qubism-and-schmidt-plots](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/qubism-and-schmidt-plots.ipynb)
 
 ### Bloch-Redfield master equation solver
 
