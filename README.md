@@ -37,6 +37,7 @@ http://nbviewer.ipython.org:
  * [example-spin-chain](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain.ipynb)
  * [example-quantum-gates](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-gates.ipynb)
  * [example-spin-chain-model](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain-model.ipynb)
+ * [example-qubism-and-schmidt-plots](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/qubism-and-schmidt-plots.ipynb)
 
 ### Bloch-Redfield master equation solver
 
