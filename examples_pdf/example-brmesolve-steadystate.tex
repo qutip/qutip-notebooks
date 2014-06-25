@@ -1,0 +1,653 @@
+
+% Default to the notebook output style
+
+    
+
+
+% Inherit from the specified cell style.
+
+
+
+
+    
+\documentclass{article}
+
+    
+    
+    \usepackage{graphicx} % Used to insert images
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{color} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    
+
+    
+    
+    \definecolor{orange}{cmyk}{0,0.4,0.8,0.2}
+    \definecolor{darkorange}{rgb}{.71,0.21,0.01}
+    \definecolor{darkgreen}{rgb}{.12,.54,.11}
+    \definecolor{myteal}{rgb}{.26, .44, .56}
+    \definecolor{gray}{gray}{0.45}
+    \definecolor{lightgray}{gray}{.95}
+    \definecolor{mediumgray}{gray}{.8}
+    \definecolor{inputbackground}{rgb}{.95, .95, .85}
+    \definecolor{outputbackground}{rgb}{.95, .95, .95}
+    \definecolor{traceback}{rgb}{1, .95, .95}
+    % ansi colors
+    \definecolor{red}{rgb}{.6,0,0}
+    \definecolor{green}{rgb}{0,.65,0}
+    \definecolor{brown}{rgb}{0.6,0.6,0}
+    \definecolor{blue}{rgb}{0,.145,.698}
+    \definecolor{purple}{rgb}{.698,.145,.698}
+    \definecolor{cyan}{rgb}{0,.698,.698}
+    \definecolor{lightgray}{gray}{0.5}
+    
+    % bright ansi colors
+    \definecolor{darkgray}{gray}{0.25}
+    \definecolor{lightred}{rgb}{1.0,0.39,0.28}
+    \definecolor{lightgreen}{rgb}{0.48,0.99,0.0}
+    \definecolor{lightblue}{rgb}{0.53,0.81,0.92}
+    \definecolor{lightpurple}{rgb}{0.87,0.63,0.87}
+    \definecolor{lightcyan}{rgb}{0.5,1.0,0.83}
+    
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{example-brmesolve-steadystate}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=blue,
+      linkcolor=darkorange,
+      citecolor=darkgreen,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+    \begin{document}
+    
+    
+    \maketitle
+    
+    
+
+    
+
+    \section{Steadystate of the Bloch-Redfield Master Equation}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}1}]:} \PY{o}{\PYZpc{}}\PY{k}{matplotlib} \PY{n}{inline}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}2}]:} \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k+kn}{as} \PY{n+nn}{np}
+        \PY{k+kn}{from} \PY{n+nn}{qutip} \PY{k+kn}{import} \PY{o}{*}
+        \PY{k+kn}{from} \PY{n+nn}{IPython.display} \PY{k+kn}{import} \PY{n}{display}
+\end{Verbatim}
+
+
+    \subsection{Compare steadystate of brmesolve and mesolve}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}3}]:} \PY{k}{def} \PY{n+nf}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}\PY{p}{:}
+            
+            \PY{n}{result\PYZus{}me} \PY{o}{=} \PY{n}{mesolve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{times}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+            \PY{n}{result\PYZus{}brme} \PY{o}{=} \PY{n}{brmesolve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{times}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{,} \PY{n}{spectra\PYZus{}cb}\PY{o}{=}\PY{n}{S\PYZus{}w}\PY{p}{)}
+            
+            \PY{n}{fig}\PY{p}{,} \PY{n}{ax} \PY{o}{=} \PY{n}{plot\PYZus{}expectation\PYZus{}values}\PY{p}{(}\PY{p}{[}\PY{n}{result\PYZus{}me}\PY{p}{,} \PY{n}{result\PYZus{}brme}\PY{p}{]}\PY{p}{)}
+            \PY{n}{display}\PY{p}{(}\PY{n}{fig}\PY{p}{)}
+            \PY{n}{plt}\PY{o}{.}\PY{n}{close}\PY{p}{(}\PY{n}{fig}\PY{p}{)}
+            
+            \PY{n}{R}\PY{p}{,} \PY{n}{ekets} \PY{o}{=} \PY{n}{bloch\PYZus{}redfield\PYZus{}tensor}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Bloch\PYZhy{}Redfield tensor: }\PY{l+s}{\PYZdq{}}\PY{p}{)}
+            \PY{n}{display}\PY{p}{(}\PY{n}{R}\PY{p}{)}
+            
+            
+            \PY{n}{L} \PY{o}{=} \PY{n}{liouvillian}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Lindblad liouvilllian: }\PY{l+s}{\PYZdq{}}\PY{p}{)}
+            \PY{n}{display}\PY{p}{(}\PY{n}{L}\PY{p}{)}
+            
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Bloch\PYZhy{}Redfield steadystate dm}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+            \PY{n}{R\PYZus{}rhoss\PYZus{}eb} \PY{o}{=} \PY{n}{steadystate}\PY{p}{(}\PY{n}{R}\PY{p}{)}
+            \PY{n}{R\PYZus{}rhoss} \PY{o}{=} \PY{n}{R\PYZus{}rhoss\PYZus{}eb}\PY{o}{.}\PY{n}{transform}\PY{p}{(}\PY{n}{ekets}\PY{p}{,} \PY{n+nb+bp}{True}\PY{p}{)}
+            \PY{n}{display}\PY{p}{(}\PY{n}{R\PYZus{}rhoss}\PY{p}{)}
+            
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Lindblad steadystate dm}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+            \PY{n}{L\PYZus{}rhoss} \PY{o}{=} \PY{n}{steadystate}\PY{p}{(}\PY{n}{L}\PY{p}{)}
+            \PY{n}{display}\PY{p}{(}\PY{n}{L\PYZus{}rhoss}\PY{p}{)}
+        
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Steadystate expectation values}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{R\PYZus{}ob: }\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{p}{[}\PY{n}{expect}\PY{p}{(}\PY{n}{e}\PY{p}{,} \PY{n}{R\PYZus{}rhoss}\PY{p}{)} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{e\PYZus{}ops}\PY{p}{]}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{R\PYZus{}eb: }\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{p}{[}\PY{n}{expect}\PY{p}{(}\PY{n}{e}\PY{o}{.}\PY{n}{transform}\PY{p}{(}\PY{n}{ekets}\PY{p}{)}\PY{p}{,} \PY{n}{R\PYZus{}rhoss\PYZus{}eb}\PY{p}{)} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{e\PYZus{}ops}\PY{p}{]}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{L   : }\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{p}{[}\PY{n}{expect}\PY{p}{(}\PY{n}{e}\PY{p}{,} \PY{n}{L\PYZus{}rhoss}\PY{p}{)} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{e\PYZus{}ops}\PY{p}{]}\PY{p}{)}
+        
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{=}\PY{l+s}{\PYZdq{}}\PY{o}{*} \PY{l+m+mi}{20} \PY{o}{+} \PY{l+s}{\PYZdq{}}\PY{l+s}{ Dynamics final states}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+        
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{R: }\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{p}{[}\PY{n}{e}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}\PY{o}{.}\PY{n}{real} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{result\PYZus{}brme}\PY{o}{.}\PY{n}{expect}\PY{p}{]}\PY{p}{)}
+            \PY{k}{print}\PY{p}{(}\PY{l+s}{\PYZdq{}}\PY{l+s}{L: }\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{p}{[}\PY{n}{e}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{result\PYZus{}me}\PY{o}{.}\PY{n}{expect}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+
+
+    \subsection{Two-level system}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}4}]:} \PY{n}{delta} \PY{o}{=} \PY{l+m+mf}{0.0} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+        \PY{n}{epsilon} \PY{o}{=} \PY{l+m+mf}{0.5} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+        \PY{n}{gamma} \PY{o}{=} \PY{l+m+mf}{0.25}
+        \PY{n}{times} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{50}\PY{p}{,} \PY{l+m+mi}{100}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}5}]:} \PY{n}{H} \PY{o}{=} \PY{n}{delta}\PY{o}{/}\PY{l+m+mi}{2} \PY{o}{*} \PY{n}{sigmay}\PY{p}{(}\PY{p}{)} \PY{o}{+} \PY{n}{epsilon}\PY{o}{/}\PY{l+m+mi}{2} \PY{o}{*} \PY{n}{sigmaz}\PY{p}{(}\PY{p}{)}
+        \PY{n}{psi0} \PY{o}{=} \PY{p}{(}\PY{l+m+mi}{2} \PY{o}{*} \PY{n}{basis}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{)} \PY{o}{+} \PY{n}{basis}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{o}{.}\PY{n}{unit}\PY{p}{(}\PY{p}{)}
+        \PY{n}{c\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sqrt}\PY{p}{(}\PY{n}{gamma}\PY{p}{)} \PY{o}{*} \PY{n}{sigmam}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+        \PY{n}{a\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sigmax}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+        \PY{n}{S\PYZus{}w} \PY{o}{=} \PY{p}{[}\PY{k}{lambda} \PY{n}{w} \PY{p}{:} \PY{n}{gamma} \PY{o}{*} \PY{p}{(}\PY{n}{w} \PY{o}{\PYZgt{}}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{]}
+        \PY{n}{e\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sigmax}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{sigmay}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{sigmaz}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}6}]:} \PY{n}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/usr/lib/python3/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+  return array(a, dtype, copy=False, order=order)
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{example-brmesolve-steadystate_files/example-brmesolve-steadystate_8_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield tensor:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[2], [2]], [[2], [2]]], shape = [4, 4], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & 0.250\\0.0 & (-0.125-3.142j) & 0.0 & 0.0\\0.0 & 0.0 & (-0.125+3.142j) & 0.0\\0.0 & 0.0 & 0.0 & -0.250\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad liouvilllian:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[2], [2]], [[2], [2]]], shape = [4, 4], type = super, isherm = False\begin{equation*}\begin{pmatrix}-0.250 & 0.0 & 0.0 & 0.0\\0.0 & (-0.125+3.142j) & 0.0 & 0.0\\0.0 & 0.0 & (-0.125-3.142j) & 0.0\\0.250 & 0.0 & 0.0 & 0.0\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[2], [2]], shape = [2, 2], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.0 & 0.0\\0.0 & 1.0\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[2], [2]], shape = [2, 2], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.0 & 0.0\\0.0 & 1.0\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Steadystate expectation values
+R\_ob:  [0.0, 0.0, -1.0]
+R\_eb:  [0.0, 0.0, -1.0]
+L   :  [0.0, 0.0, -1.0]
+==================== Dynamics final states
+R:  [0.0015427968283087687, 2.506068854864511e-07, -0.999994037354897]
+L:  [0.001542796828343541, 2.5060686974779289e-07, -0.99999403735489634]
+    \end{Verbatim}
+
+
+    \subsection{Harmonic oscillator}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}7}]:} \PY{n}{N} \PY{o}{=} \PY{l+m+mi}{10}
+        
+        \PY{n}{w0} \PY{o}{=} \PY{l+m+mf}{1.0} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+        \PY{n}{g} \PY{o}{=} \PY{l+m+mf}{0.05} \PY{o}{*} \PY{n}{w0}
+        \PY{n}{kappa} \PY{o}{=} \PY{l+m+mf}{0.15}
+        
+        \PY{n}{times} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{50}\PY{p}{,} \PY{l+m+mi}{1000}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}8}]:} \PY{n}{a} \PY{o}{=} \PY{n}{destroy}\PY{p}{(}\PY{n}{N}\PY{p}{)}
+        \PY{n}{H} \PY{o}{=} \PY{n}{w0} \PY{o}{*} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{a} \PY{o}{+} \PY{n}{g} \PY{o}{*} \PY{p}{(}\PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+        \PY{n}{psi0} \PY{o}{=} \PY{n}{ket2dm}\PY{p}{(}\PY{p}{(}\PY{n}{basis}\PY{p}{(}\PY{n}{N}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)} \PY{o}{+} \PY{n}{basis}\PY{p}{(}\PY{n}{N}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)} \PY{o}{+} \PY{n}{basis}\PY{p}{(}\PY{n}{N}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{)}\PY{p}{)}\PY{o}{.}\PY{n}{unit}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+        \PY{n}{a\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+        \PY{n}{e\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{,} \PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+\end{Verbatim}
+
+
+    \subsubsection{Zero temperature}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}9}]:} \PY{n}{c\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sqrt}\PY{p}{(}\PY{n}{kappa}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{]}
+        \PY{n}{S\PYZus{}w} \PY{o}{=} \PY{p}{[}\PY{k}{lambda} \PY{n}{w} \PY{p}{:} \PY{n}{kappa} \PY{o}{*} \PY{p}{(}\PY{n}{w} \PY{o}{\PYZgt{}}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{]}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}10}]:} \PY{n}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{example-brmesolve-steadystate_files/example-brmesolve-steadystate_14_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield tensor:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10], [10]], [[10], [10]]], shape = [100, 100], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 1.926\times10^{-25}\\0.0 & (-0.075-6.283j) & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & (-0.150-12.566j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & (-0.225-18.850j) & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & (-0.300-25.133j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-1.090+25.288j) & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & (-1.165+19.005j) & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-1.240+12.722j) & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & (-1.312+6.437j) & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & -1.286\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad liouvilllian:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10], [10]], [[10], [10]]], shape = [100, 100], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & -0.314j & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-0.314j & (-0.075-6.283j) & -0.444j & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -0.444j & (-0.150-12.566j) & -0.544j & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & -0.544j & (-0.225-18.850j) & -0.628j & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & -0.628j & (-0.300-25.133j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-1.050+25.133j) & -0.770j & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & -0.770j & (-1.125+18.850j) & -0.831j & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & -0.831j & (-1.200+12.566j) & -0.889j & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -0.889j & (-1.275+6.283j) & -0.942j\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & -0.942j & -1.350\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10], [10]], shape = [10, 10], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.998 & -0.050 & 0.002 & -5.090\times10^{-05} & 1.273\times10^{-06} & -2.846\times10^{-08} & 5.809\times10^{-10} & -1.098\times10^{-11} & 1.939\times10^{-13} & -3.215\times10^{-15}\\-0.050 & 0.002 & -8.817\times10^{-05} & 2.545\times10^{-06} & -6.363\times10^{-08} & 1.423\times10^{-09} & -2.904\times10^{-11} & 5.488\times10^{-13} & -9.694\times10^{-15} & 1.607\times10^{-16}\\0.002 & -8.817\times10^{-05} & 3.117\times10^{-06} & -8.999\times10^{-08} & 2.250\times10^{-09} & -5.030\times10^{-11} & 1.027\times10^{-12} & -1.940\times10^{-14} & 3.427\times10^{-16} & -5.683\times10^{-18}\\-5.090\times10^{-05} & 2.545\times10^{-06} & -8.999\times10^{-08} & 2.598\times10^{-09} & -6.494\times10^{-11} & 1.452\times10^{-12} & -2.964\times10^{-14} & 5.602\times10^{-16} & -9.894\times10^{-18} & 1.641\times10^{-19}\\1.273\times10^{-06} & -6.363\times10^{-08} & 2.250\times10^{-09} & -6.494\times10^{-11} & 1.624\times10^{-12} & -3.630\times10^{-14} & 7.410\times10^{-16} & -1.400\times10^{-17} & 2.474\times10^{-19} & -4.101\times10^{-21}\\-2.846\times10^{-08} & 1.423\times10^{-09} & -5.030\times10^{-11} & 1.452\times10^{-12} & -3.630\times10^{-14} & 8.118\times10^{-16} & -1.657\times10^{-17} & 3.131\times10^{-19} & -5.531\times10^{-21} & 9.171\times10^{-23}\\5.809\times10^{-10} & -2.904\times10^{-11} & 1.027\times10^{-12} & -2.964\times10^{-14} & 7.410\times10^{-16} & -1.657\times10^{-17} & 3.382\times10^{-19} & -6.392\times10^{-21} & 1.129\times10^{-22} & -1.872\times10^{-24}\\-1.098\times10^{-11} & 5.488\times10^{-13} & -1.940\times10^{-14} & 5.602\times10^{-16} & -1.400\times10^{-17} & 3.131\times10^{-19} & -6.392\times10^{-21} & 1.208\times10^{-22} & -2.139\times10^{-24} & 3.578\times10^{-26}\\1.939\times10^{-13} & -9.694\times10^{-15} & 3.427\times10^{-16} & -9.894\times10^{-18} & 2.474\times10^{-19} & -5.531\times10^{-21} & 1.129\times10^{-22} & -2.139\times10^{-24} & 3.922\times10^{-26} & -7.811\times10^{-28}\\-3.215\times10^{-15} & 1.607\times10^{-16} & -5.683\times10^{-18} & 1.641\times10^{-19} & -4.101\times10^{-21} & 9.171\times10^{-23} & -1.872\times10^{-24} & 3.578\times10^{-26} & -7.811\times10^{-28} & 1.006\times10^{-28}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10], [10]], shape = [10, 10], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.998 & (-0.050+5.953\times10^{-04}j) & (0.002-4.208\times10^{-05}j) & (-5.086\times10^{-05}+1.822\times10^{-06}j) & (1.271\times10^{-06}-6.072\times10^{-08}j) & (-2.840\times10^{-08}+1.697\times10^{-09}j) & (5.791\times10^{-10}-4.155\times10^{-11}j) & -1.093\times10^{-11} & 1.931\times10^{-13} & -3.213\times10^{-15}\\(-0.050-5.953\times10^{-04}j) & 0.002 & (-8.814\times10^{-05}+1.052\times10^{-06}j) & (2.544\times10^{-06}-6.074\times10^{-08}j) & (-6.357\times10^{-08}+2.277\times10^{-09}j) & (1.421\times10^{-09}-6.788\times10^{-11}j) & (-2.898\times10^{-11}+1.731\times10^{-12}j) & 5.471\times10^{-13} & -9.662\times10^{-15} & 1.608\times10^{-16}\\(0.002+4.208\times10^{-05}j) & (-8.814\times10^{-05}-1.052\times10^{-06}j) & 3.116\times10^{-06} & (-8.995\times10^{-08}+1.074\times10^{-09}j) & (2.248\times10^{-09}-5.368\times10^{-11}j) & (-5.025\times10^{-11}+1.800\times10^{-12}j) & 1.025\times10^{-12} & -1.936\times10^{-14} & 3.419\times10^{-16} & -5.691\times10^{-18}\\(-5.086\times10^{-05}-1.822\times10^{-06}j) & (2.544\times10^{-06}+6.074\times10^{-08}j) & (-8.995\times10^{-08}-1.074\times10^{-09}j) & 2.597\times10^{-09} & -6.490\times10^{-11} & 1.451\times10^{-12} & -2.960\times10^{-14} & 5.591\times10^{-16} & -9.877\times10^{-18} & 1.644\times10^{-19}\\(1.271\times10^{-06}+6.072\times10^{-08}j) & (-6.357\times10^{-08}-2.277\times10^{-09}j) & (2.248\times10^{-09}+5.368\times10^{-11}j) & -6.490\times10^{-11} & 1.623\times10^{-12} & -3.628\times10^{-14} & 7.402\times10^{-16} & -1.398\times10^{-17} & 2.468\times10^{-19} & -4.105\times10^{-21}\\(-2.840\times10^{-08}-1.697\times10^{-09}j) & (1.421\times10^{-09}+6.788\times10^{-11}j) & (-5.025\times10^{-11}-1.800\times10^{-12}j) & 1.451\times10^{-12} & -3.628\times10^{-14} & 8.145\times10^{-16} & -1.709\times10^{-17} & 3.487\times10^{-19} & -7.255\times10^{-21} & 1.579\times10^{-22}\\(5.791\times10^{-10}+4.155\times10^{-11}j) & (-2.898\times10^{-11}-1.731\times10^{-12}j) & 1.025\times10^{-12} & -2.960\times10^{-14} & 7.402\times10^{-16} & -1.709\times10^{-17} & 2.950\times10^{-19} & 3.230\times10^{-21} & -6.446\times10^{-22} & 3.730\times10^{-23}\\-1.093\times10^{-11} & 5.471\times10^{-13} & -1.936\times10^{-14} & 5.591\times10^{-16} & -1.398\times10^{-17} & 3.487\times10^{-19} & 3.230\times10^{-21} & -2.375\times10^{-21} & 2.451\times10^{-22} & -1.555\times10^{-23}\\1.931\times10^{-13} & -9.662\times10^{-15} & 3.419\times10^{-16} & -9.877\times10^{-18} & 2.468\times10^{-19} & -7.255\times10^{-21} & -6.446\times10^{-22} & 2.451\times10^{-22} & -2.989\times10^{-23} & 2.228\times10^{-24}\\-3.213\times10^{-15} & 1.608\times10^{-16} & -5.691\times10^{-18} & 1.644\times10^{-19} & -4.105\times10^{-21} & 1.579\times10^{-22} & 3.730\times10^{-23} & -1.555\times10^{-23} & 2.228\times10^{-24} & -1.921\times10^{-25}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Steadystate expectation values
+R\_ob:  [0.0024999999999999628, -0.09999999999999923]
+R\_eb:  [0.0024999999999999628, -0.09999999999999924]
+L   :  [0.0024996438434600815, -0.09998575373839912]
+==================== Dynamics final states
+R:  [0.0034899627568905876, -0.097648226112854564]
+L:  [0.0034896231351718215, -0.097634314487055257]
+    \end{Verbatim}
+
+
+    \subsubsection{Finite temperature}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}11}]:} \PY{n}{n\PYZus{}th} \PY{o}{=} \PY{l+m+mf}{1.5}
+         \PY{n}{c\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sqrt}\PY{p}{(}\PY{n}{kappa} \PY{o}{*} \PY{p}{(}\PY{n}{n\PYZus{}th} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{,} \PY{n}{sqrt}\PY{p}{(}\PY{n}{kappa} \PY{o}{*} \PY{n}{n\PYZus{}th}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+         \PY{n}{w\PYZus{}th} \PY{o}{=} \PY{n}{w0}\PY{o}{/}\PY{n}{log}\PY{p}{(}\PY{l+m+mi}{1} \PY{o}{+} \PY{l+m+mi}{1}\PY{o}{/}\PY{n}{n\PYZus{}th}\PY{p}{)}
+         
+         \PY{k}{def} \PY{n+nf}{S\PYZus{}w\PYZus{}func}\PY{p}{(}\PY{n}{w}\PY{p}{)}\PY{p}{:}
+             \PY{k}{if} \PY{n}{w} \PY{o}{\PYZgt{}}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{:}
+                 \PY{k}{return} \PY{p}{(}\PY{n}{n\PYZus{}th} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{)} \PY{o}{*} \PY{n}{kappa}
+             \PY{k}{else}\PY{p}{:}
+                 \PY{k}{return} \PY{p}{(}\PY{n}{n\PYZus{}th} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{)} \PY{o}{*} \PY{n}{kappa} \PY{o}{*} \PY{n}{exp}\PY{p}{(}\PY{n}{w} \PY{o}{/} \PY{n}{w\PYZus{}th}\PY{p}{)}
+             
+         \PY{n}{S\PYZus{}w} \PY{o}{=} \PY{p}{[}\PY{n}{S\PYZus{}w\PYZus{}func}\PY{p}{]}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}12}]:} \PY{n}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{example-brmesolve-steadystate_files/example-brmesolve-steadystate_17_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield tensor:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10], [10]], [[10], [10]]], shape = [100, 100], type = super, isherm = False\begin{equation*}\begin{pmatrix}-0.225 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 4.815\times10^{-25}\\0.0 & (-0.525-6.283j) & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & (-0.825-12.566j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & (-1.125-18.850j) & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & (-1.425-25.133j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-3.400+25.288j) & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & (-3.700+19.005j) & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-3.999+12.722j) & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & (-4.231+6.437j) & 0.0\\4.792\times10^{-27} & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & -3.215\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad liouvilllian:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10], [10]], [[10], [10]]], shape = [100, 100], type = super, isherm = False\begin{equation*}\begin{pmatrix}-0.225 & -0.314j & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-0.314j & (-0.525-6.283j) & -0.444j & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -0.444j & (-0.825-12.566j) & -0.544j & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & -0.544j & (-1.125-18.850j) & -0.628j & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & -0.628j & (-1.425-25.133j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-3.300+25.133j) & -0.770j & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & -0.770j & (-3.600+18.850j) & -0.831j & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & -0.831j & (-3.900+12.566j) & -0.889j & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -0.889j & (-4.200+6.283j) & -0.942j\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & -0.942j & -3.375\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10], [10]], shape = [10, 10], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.402 & -0.008 & 1.137\times10^{-04} & -1.313\times10^{-06} & 1.313\times10^{-08} & -1.174\times10^{-10} & 9.582\times10^{-13} & -7.302\times10^{-15} & -2.331\times10^{-15} & 1.775\times10^{-15}\\-0.008 & 0.241 & -0.007 & 1.182\times10^{-04} & -1.576\times10^{-06} & 1.762\times10^{-08} & -1.726\times10^{-10} & 1.521\times10^{-12} & -9.690\times10^{-15} & 2.836\times10^{-14}\\1.137\times10^{-04} & -0.007 & 0.145 & -0.005 & 1.003\times10^{-04} & -1.495\times10^{-06} & 1.831\times10^{-08} & -1.938\times10^{-10} & 1.827\times10^{-12} & -1.787\times10^{-14}\\-1.313\times10^{-06} & 1.182\times10^{-04} & -0.005 & 0.087 & -0.003 & 7.773\times10^{-05} & -1.269\times10^{-06} & 1.679\times10^{-08} & -1.899\times10^{-10} & 1.899\times10^{-12}\\1.313\times10^{-08} & -1.576\times10^{-06} & 1.003\times10^{-04} & -0.003 & 0.052 & -0.002 & 5.713\times10^{-05} & -1.007\times10^{-06} & 1.425\times10^{-08} & -1.709\times10^{-10}\\-1.174\times10^{-10} & 1.762\times10^{-08} & -1.495\times10^{-06} & 7.773\times10^{-05} & -0.002 & 0.031 & -0.002 & 4.057\times10^{-05} & -7.647\times10^{-07} & 1.147\times10^{-08}\\9.582\times10^{-13} & -1.726\times10^{-10} & 1.831\times10^{-08} & -1.269\times10^{-06} & 5.713\times10^{-05} & -0.002 & 0.019 & -9.946\times10^{-04} & 2.811\times10^{-05} & -5.619\times10^{-07}\\-7.302\times10^{-15} & 1.521\times10^{-12} & -1.938\times10^{-10} & 1.679\times10^{-08} & -1.007\times10^{-06} & 4.057\times10^{-05} & -9.946\times10^{-04} & 0.011 & -6.382\times10^{-04} & 1.912\times10^{-05}\\-2.331\times10^{-15} & -9.690\times10^{-15} & 1.827\times10^{-12} & -1.899\times10^{-10} & 1.425\times10^{-08} & -7.647\times10^{-07} & 2.811\times10^{-05} & -6.382\times10^{-04} & 0.007 & -4.059\times10^{-04}\\1.775\times10^{-15} & 2.836\times10^{-14} & -1.787\times10^{-14} & 1.899\times10^{-12} & -1.709\times10^{-10} & 1.147\times10^{-08} & -5.619\times10^{-07} & 1.912\times10^{-05} & -4.059\times10^{-04} & 0.004\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10], [10]], shape = [10, 10], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.402 & (-0.008+9.596\times10^{-05}j) & (1.137\times10^{-04}-2.714\times10^{-06}j) & (-1.312\times10^{-06}+4.705\times10^{-08}j) & (1.312\times10^{-08}-6.319\times10^{-10}j) & (-1.178\times10^{-10}+6.493\times10^{-12}j) & 9.423\times10^{-13} & -4.294\times10^{-15} & -7.474\times10^{-17} & 1.605\times10^{-18}\\(-0.008-9.596\times10^{-05}j) & 0.241 & (-0.007+8.146\times10^{-05}j) & (1.181\times10^{-04}-2.818\times10^{-06}j) & (-1.574\times10^{-06}+5.621\times10^{-08}j) & (1.756\times10^{-08}-8.970\times10^{-10}j) & (-1.757\times10^{-10}+1.454\times10^{-11}j) & 1.853\times10^{-12} & -2.153\times10^{-14} & 4.078\times10^{-17}\\(1.137\times10^{-04}+2.714\times10^{-06}j) & (-0.007-8.146\times10^{-05}j) & 0.145 & (-0.005+5.991\times10^{-05}j) & (1.003\times10^{-04}-2.396\times10^{-06}j) & (-1.495\times10^{-06}+5.069\times10^{-08}j) & (1.800\times10^{-08}-7.440\times10^{-10}j) & (-1.758\times10^{-10}+2.574\times10^{-11}j) & (1.790\times10^{-12}-1.344\times10^{-12}j) & -4.383\times10^{-14}\\(-1.312\times10^{-06}-4.705\times10^{-08}j) & (1.181\times10^{-04}+2.818\times10^{-06}j) & (-0.005-5.991\times10^{-05}j) & 0.087 & (-0.003+4.153\times10^{-05}j) & (7.770\times10^{-05}-1.924\times10^{-06}j) & (-1.279\times10^{-06}+4.505\times10^{-08}j) & (1.710\times10^{-08}+1.921\times10^{-10}j) & (-1.533\times10^{-10}-4.118\times10^{-11}j) & -6.294\times10^{-13}\\(1.312\times10^{-08}+6.319\times10^{-10}j) & (-1.574\times10^{-06}-5.621\times10^{-08}j) & (1.003\times10^{-04}+2.396\times10^{-06}j) & (-0.003-4.153\times10^{-05}j) & 0.052 & (-0.002+2.718\times10^{-05}j) & (5.688\times10^{-05}-1.483\times10^{-06}j) & (-1.015\times10^{-06}+6.915\times10^{-08}j) & (1.666\times10^{-08}-1.361\times10^{-09}j) & (-2.725\times10^{-10}-3.558\times10^{-11}j)\\(-1.178\times10^{-10}-6.493\times10^{-12}j) & (1.756\times10^{-08}+8.970\times10^{-10}j) & (-1.495\times10^{-06}-5.069\times10^{-08}j) & (7.770\times10^{-05}+1.924\times10^{-06}j) & (-0.002-2.718\times10^{-05}j) & 0.031 & (-0.002+1.615\times10^{-05}j) & (4.000\times10^{-05}-4.783\times10^{-07}j) & (-6.958\times10^{-07}+6.183\times10^{-08}j) & (1.025\times10^{-08}-4.287\times10^{-09}j)\\9.423\times10^{-13} & (-1.757\times10^{-10}-1.454\times10^{-11}j) & (1.800\times10^{-08}+7.440\times10^{-10}j) & (-1.279\times10^{-06}-4.505\times10^{-08}j) & (5.688\times10^{-05}+1.483\times10^{-06}j) & (-0.002-1.615\times10^{-05}j) & 0.019 & (-0.001+1.302\times10^{-05}j) & (2.875\times10^{-05}+9.020\times10^{-07}j) & (-5.015\times10^{-07}-5.299\times10^{-08}j)\\-4.294\times10^{-15} & 1.853\times10^{-12} & (-1.758\times10^{-10}-2.574\times10^{-11}j) & (1.710\times10^{-08}-1.921\times10^{-10}j) & (-1.015\times10^{-06}-6.915\times10^{-08}j) & (4.000\times10^{-05}+4.783\times10^{-07}j) & (-0.001-1.302\times10^{-05}j) & 0.011 & (-6.459\times10^{-04}+2.824\times10^{-05}j) & (2.157\times10^{-05}-9.632\times10^{-07}j)\\-7.474\times10^{-17} & -2.153\times10^{-14} & (1.790\times10^{-12}+1.344\times10^{-12}j) & (-1.533\times10^{-10}+4.118\times10^{-11}j) & (1.666\times10^{-08}+1.361\times10^{-09}j) & (-6.958\times10^{-07}-6.183\times10^{-08}j) & (2.875\times10^{-05}-9.020\times10^{-07}j) & (-6.459\times10^{-04}-2.824\times10^{-05}j) & 0.007 & (-3.735\times10^{-04}+5.327\times10^{-05}j)\\1.605\times10^{-18} & 4.078\times10^{-17} & -4.383\times10^{-14} & -6.294\times10^{-13} & (-2.725\times10^{-10}+3.558\times10^{-11}j) & (1.025\times10^{-08}+4.287\times10^{-09}j) & (-5.015\times10^{-07}+5.299\times10^{-08}j) & (2.157\times10^{-05}+9.632\times10^{-07}j) & (-3.735\times10^{-04}-5.327\times10^{-05}j) & 0.004\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Steadystate expectation values
+R\_ob:  [1.441172521173383, -0.09593514655834628]
+R\_eb:  [1.4411725211733832, -0.09593514655834628]
+L   :  [1.4415837865925498, -0.09581420257265141]
+==================== Dynamics final states
+R:  [1.4412697964611789, -0.094946706436501091]
+L:  [1.4416807381001973, -0.094807209086397559]
+    \end{Verbatim}
+
+
+    \subsection{Atom-Cavity}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}13}]:} \PY{n}{N} \PY{o}{=} \PY{l+m+mi}{10}
+         \PY{n}{a} \PY{o}{=} \PY{n}{tensor}\PY{p}{(}\PY{n}{destroy}\PY{p}{(}\PY{n}{N}\PY{p}{)}\PY{p}{,} \PY{n}{identity}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}
+         \PY{n}{sm} \PY{o}{=} \PY{n}{tensor}\PY{p}{(}\PY{n}{identity}\PY{p}{(}\PY{n}{N}\PY{p}{)}\PY{p}{,} \PY{n}{destroy}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}
+         \PY{n}{psi0} \PY{o}{=} \PY{n}{ket2dm}\PY{p}{(}\PY{n}{tensor}\PY{p}{(}\PY{n}{basis}\PY{p}{(}\PY{n}{N}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{n}{basis}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+         \PY{n}{a\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{p}{(}\PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{]}
+         \PY{n}{e\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{,} \PY{n}{sm}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{sm}\PY{p}{]}
+\end{Verbatim}
+
+
+    \subsubsection{Weak coupling}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}14}]:} \PY{n}{w0} \PY{o}{=} \PY{l+m+mf}{1.0} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+         \PY{n}{g} \PY{o}{=} \PY{l+m+mf}{0.05} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+         \PY{n}{kappa} \PY{o}{=} \PY{l+m+mf}{0.05}
+         \PY{n}{times} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{150} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi} \PY{o}{/} \PY{n}{g}\PY{p}{,} \PY{l+m+mi}{1000}\PY{p}{)}
+         
+         \PY{n}{c\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sqrt}\PY{p}{(}\PY{n}{kappa}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{]}
+         \PY{n}{S\PYZus{}w} \PY{o}{=} \PY{p}{[}\PY{k}{lambda} \PY{n}{w} \PY{p}{:} \PY{n}{kappa}\PY{o}{*}\PY{p}{(}\PY{n}{w} \PY{o}{\PYZgt{}} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{]}
+         \PY{n}{H} \PY{o}{=} \PY{n}{w0} \PY{o}{*} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{a} \PY{o}{+} \PY{n}{w0} \PY{o}{*} \PY{n}{sm}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{sm} \PY{o}{+} \PY{n}{g} \PY{o}{*} \PY{p}{(}\PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{*} \PY{p}{(}\PY{n}{sm} \PY{o}{+} \PY{n}{sm}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}15}]:} \PY{n}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{example-brmesolve-steadystate_files/example-brmesolve-steadystate_22_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield tensor:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10, 2], [10, 2]], [[10, 2], [10, 2]]], shape = [400, 400], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & (-0.013-5.969j) & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & (-0.012-6.597j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & (-0.039-12.122j) & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & (-0.036-13.010j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-0.419+13.531j) & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & (-0.413+11.758j) & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-0.441+7.263j) & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & (-0.436+5.382j) & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & -0.457\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad liouvilllian:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10, 2], [10, 2]], [[10, 2], [10, 2]]], shape = [400, 400], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & -0.314j & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -6.283j & -0.314j & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -0.314j & (-0.025-6.283j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-0.314j & 0.0 & 0.0 & (-0.025-12.566j) & -0.444j & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & -0.444j & (-0.050-12.566j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-0.400+12.566j) & -0.889j & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & -0.889j & (-0.425+12.566j) & 0.0 & 0.0 & -0.942j\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-0.425+6.283j) & -0.942j & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -0.942j & (-0.450+6.283j) & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & -0.942j & 0.0 & 0.0 & -0.450\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10, 2], [10, 2]], shape = [20, 20], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.999 & 0.0 & 0.0 & -0.025 & 8.842\times10^{-04} & \cdots & -3.013\times10^{-12} & 5.302\times10^{-14} & 0.0 & 0.0 & -3.974\times10^{-15}\\0.0 & 1.178\times10^{-16} & 1.068\times10^{-16} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -2.567\times10^{-27} & 6.629\times10^{-29} & 0.0\\0.0 & 1.068\times10^{-16} & 1.123\times10^{-16} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -9.345\times10^{-26} & 3.427\times10^{-27} & 0.0\\-0.025 & 0.0 & 0.0 & 6.254\times10^{-04} & -2.212\times10^{-05} & \cdots & 7.538\times10^{-14} & -1.326\times10^{-15} & 0.0 & 0.0 & 9.942\times10^{-17}\\8.842\times10^{-04} & 0.0 & 0.0 & -2.212\times10^{-05} & 7.822\times10^{-07} & \cdots & -2.666\times10^{-15} & 4.691\times10^{-17} & 0.0 & 0.0 & -3.516\times10^{-18}\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\-3.013\times10^{-12} & 0.0 & 0.0 & 7.538\times10^{-14} & -2.666\times10^{-15} & \cdots & 1.446\times10^{-18} & 5.065\times10^{-18} & 0.0 & 0.0 & -3.873\times10^{-19}\\5.302\times10^{-14} & 0.0 & 0.0 & -1.326\times10^{-15} & 4.691\times10^{-17} & \cdots & 5.065\times10^{-18} & 7.156\times10^{-19} & 0.0 & 0.0 & -8.045\times10^{-20}\\0.0 & -2.567\times10^{-27} & -9.345\times10^{-26} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 1.109\times10^{-18} & 4.541\times10^{-18} & 0.0\\0.0 & 6.629\times10^{-29} & 3.427\times10^{-27} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 4.541\times10^{-18} & 8.001\times10^{-19} & 0.0\\-3.974\times10^{-15} & 0.0 & 0.0 & 9.942\times10^{-17} & -3.516\times10^{-18} & \cdots & -3.873\times10^{-19} & -8.045\times10^{-20} & 0.0 & 0.0 & 8.080\times10^{-21}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10, 2], [10, 2]], shape = [20, 20], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.998 & 0.0 & 0.0 & (-0.025+4.974\times10^{-05}j) & (8.830\times10^{-04}-5.270\times10^{-06}j) & \cdots & -3.008\times10^{-12} & 5.318\times10^{-14} & 0.0 & 0.0 & -7.975\times10^{-16}\\0.0 & 6.282\times10^{-04} & (-3.128\times10^{-05}+4.971\times10^{-05}j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -2.686\times10^{-16} & 5.694\times10^{-18} & 0.0\\0.0 & (-3.128\times10^{-05}-4.971\times10^{-05}j) & 6.250\times10^{-04} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -5.325\times10^{-15} & 9.983\times10^{-17} & 0.0\\(-0.025-4.974\times10^{-05}j) & 0.0 & 0.0 & 6.247\times10^{-04} & (-2.210\times10^{-05}+1.024\times10^{-07}j) & \cdots & 7.512\times10^{-14} & -1.326\times10^{-15} & 0.0 & 0.0 & 1.984\times10^{-17}\\(8.830\times10^{-04}+5.270\times10^{-06}j) & 0.0 & 0.0 & (-2.210\times10^{-05}-1.024\times10^{-07}j) & 9.114\times10^{-07} & \cdots & -7.964\times10^{-15} & 1.720\times10^{-16} & 0.0 & 0.0 & -3.048\times10^{-18}\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\-3.008\times10^{-12} & 0.0 & 0.0 & 7.512\times10^{-14} & -7.964\times10^{-15} & \cdots & -5.778\times10^{-20} & 4.055\times10^{-21} & 0.0 & 0.0 & -9.183\times10^{-23}\\5.318\times10^{-14} & 0.0 & 0.0 & -1.326\times10^{-15} & 1.720\times10^{-16} & \cdots & 4.055\times10^{-21} & -2.021\times10^{-20} & 0.0 & 0.0 & 1.500\times10^{-21}\\0.0 & -2.686\times10^{-16} & -5.325\times10^{-15} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -9.225\times10^{-21} & 7.002\times10^{-22} & 0.0\\0.0 & 5.694\times10^{-18} & 9.983\times10^{-17} & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 7.002\times10^{-22} & -6.962\times10^{-23} & 0.0\\-7.975\times10^{-16} & 0.0 & 0.0 & 1.984\times10^{-17} & -3.048\times10^{-18} & \cdots & -9.183\times10^{-23} & 1.500\times10^{-21} & 0.0 & 0.0 & -1.126\times10^{-22}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Steadystate expectation values
+R\_ob:  [0.0006269556893884725, 0.0006253905020129923]
+R\_eb:  [0.0006269556893884723, 0.0006253905020129925]
+L   :  [0.0012531197519054977, 0.0012536697716990645]
+==================== Dynamics final states
+R:  [0.00062695568938809533, 0.00062539050201271794]
+L:  [0.0012531197519057469, 0.0012536697716989808]
+    \end{Verbatim}
+
+
+    \subsubsection{Strong coupling}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}16}]:} \PY{n}{w0} \PY{o}{=} \PY{l+m+mf}{1.0} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+         \PY{n}{g} \PY{o}{=} \PY{l+m+mf}{0.75} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi}
+         \PY{n}{kappa} \PY{o}{=} \PY{l+m+mf}{0.05}
+         \PY{n}{times} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{150} \PY{o}{*} \PY{l+m+mi}{2} \PY{o}{*} \PY{n}{pi} \PY{o}{/} \PY{n}{g}\PY{p}{,} \PY{l+m+mi}{1000}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}17}]:} \PY{n}{c\PYZus{}ops} \PY{o}{=} \PY{p}{[}\PY{n}{sqrt}\PY{p}{(}\PY{n}{kappa}\PY{p}{)} \PY{o}{*} \PY{n}{a}\PY{p}{]}
+         \PY{n}{H} \PY{o}{=} \PY{n}{w0} \PY{o}{*} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{a} \PY{o}{+} \PY{n}{w0} \PY{o}{*} \PY{n}{sm}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)} \PY{o}{*} \PY{n}{sm} \PY{o}{+} \PY{n}{g} \PY{o}{*} \PY{p}{(}\PY{n}{a} \PY{o}{+} \PY{n}{a}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{*} \PY{p}{(}\PY{n}{sm} \PY{o}{+} \PY{n}{sm}\PY{o}{.}\PY{n}{dag}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}18}]:} \PY{n}{solve}\PY{p}{(}\PY{n}{H}\PY{p}{,} \PY{n}{psi0}\PY{p}{,} \PY{n}{c\PYZus{}ops}\PY{p}{,} \PY{n}{a\PYZus{}ops}\PY{p}{,} \PY{n}{S\PYZus{}w}\PY{p}{,} \PY{n}{e\PYZus{}ops}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{example-brmesolve-steadystate_files/example-brmesolve-steadystate_26_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield tensor:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10, 2], [10, 2]], [[10, 2], [10, 2]]], shape = [400, 400], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & (-0.051-1.885j) & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & (-0.052-6.705j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & (-0.069-9.264j) & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & (-0.037-13.304j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-0.595+26.008j) & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & (-0.557+16.303j) & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-0.681+14.149j) & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & (-0.514+0.513j) & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & -0.948\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad liouvilllian:
+    \end{Verbatim}
+
+    Quantum object: dims = [[[10, 2], [10, 2]], [[10, 2], [10, 2]]], shape = [400, 400], type = super, isherm = False\begin{equation*}\begin{pmatrix}0.0 & 0.0 & 0.0 & -4.712j & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -6.283j & -4.712j & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & -4.712j & (-0.025-6.283j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-4.712j & 0.0 & 0.0 & (-0.025-12.566j) & -6.664j & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & -6.664j & (-0.050-12.566j) & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & (-0.400+12.566j) & -13.329j & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & -13.329j & (-0.425+12.566j) & 0.0 & 0.0 & -14.137j\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-0.425+6.283j) & -14.137j & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & -14.137j & (-0.450+6.283j) & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & -14.137j & 0.0 & 0.0 & -0.450\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Bloch-Redfield steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10, 2], [10, 2]], shape = [20, 20], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.795 & 0.0 & 0.0 & -0.345 & 0.195 & \cdots & -6.264\times10^{-04} & 1.696\times10^{-04} & 0.0 & 0.0 & -3.695\times10^{-05}\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-0.345 & 0.0 & 0.0 & 0.150 & -0.085 & \cdots & 2.722\times10^{-04} & -7.370\times10^{-05} & 0.0 & 0.0 & 1.606\times10^{-05}\\0.195 & 0.0 & 0.0 & -0.085 & 0.048 & \cdots & -1.540\times10^{-04} & 4.170\times10^{-05} & 0.0 & 0.0 & -9.086\times10^{-06}\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\-6.264\times10^{-04} & 0.0 & 0.0 & 2.722\times10^{-04} & -1.540\times10^{-04} & \cdots & 4.935\times10^{-07} & -1.336\times10^{-07} & 0.0 & 0.0 & 2.911\times10^{-08}\\1.696\times10^{-04} & 0.0 & 0.0 & -7.370\times10^{-05} & 4.170\times10^{-05} & \cdots & -1.336\times10^{-07} & 3.617\times10^{-08} & 0.0 & 0.0 & -7.882\times10^{-09}\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\0.0 & 0.0 & 0.0 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 0.0 & 0.0 & 0.0\\-3.695\times10^{-05} & 0.0 & 0.0 & 1.606\times10^{-05} & -9.086\times10^{-06} & \cdots & 2.911\times10^{-08} & -7.882\times10^{-09} & 0.0 & 0.0 & 1.717\times10^{-09}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Lindblad steadystate dm
+    \end{Verbatim}
+
+    Quantum object: dims = [[10, 2], [10, 2]], shape = [20, 20], type = oper, isherm = True\begin{equation*}\begin{pmatrix}0.595 & 0.0 & 0.0 & (-0.256+6.823\times10^{-04}j) & (0.143-9.396\times10^{-04}j) & \cdots & (-4.275\times10^{-04}+1.073\times10^{-05}j) & (1.136\times10^{-04}-3.328\times10^{-06}j) & 0.0 & 0.0 & (-2.435\times10^{-05}+8.046\times10^{-07}j)\\0.0 & 0.073 & (-0.092+6.046\times10^{-04}j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (4.927\times10^{-05}-5.798\times10^{-07}j) & (-1.237\times10^{-05}+1.515\times10^{-07}j) & 0.0\\0.0 & (-0.092-6.046\times10^{-04}j) & 0.129 & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-6.825\times10^{-05}+2.628\times10^{-06}j) & (1.592\times10^{-05}-7.139\times10^{-07}j) & 0.0\\(-0.256-6.823\times10^{-04}j) & 0.0 & 0.0 & 0.114 & (-0.066+2.619\times10^{-04}j) & \cdots & (2.457\times10^{-04}-4.655\times10^{-06}j) & (-7.023\times10^{-05}+1.572\times10^{-06}j) & 0.0 & 0.0 & (1.610\times10^{-05}-4.199\times10^{-07}j)\\(0.143+9.396\times10^{-04}j) & 0.0 & 0.0 & (-0.066-2.619\times10^{-04}j) & 0.042 & \cdots & (-1.764\times10^{-04}+2.688\times10^{-06}j) & (4.798\times10^{-05}-8.212\times10^{-07}j) & 0.0 & 0.0 & (-1.033\times10^{-05}+2.020\times10^{-07}j)\\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \vdots & \vdots\\(-4.275\times10^{-04}-1.073\times10^{-05}j) & 0.0 & 0.0 & (2.457\times10^{-04}+4.655\times10^{-06}j) & (-1.764\times10^{-04}-2.688\times10^{-06}j) & \cdots & 1.254\times10^{-05} & (-6.267\times10^{-06}+5.402\times10^{-08}j) & 0.0 & 0.0 & (2.063\times10^{-06}-3.414\times10^{-08}j)\\(1.136\times10^{-04}+3.328\times10^{-06}j) & 0.0 & 0.0 & (-7.023\times10^{-05}-1.572\times10^{-06}j) & (4.798\times10^{-05}+8.212\times10^{-07}j) & \cdots & (-6.267\times10^{-06}-5.402\times10^{-08}j) & 3.769\times10^{-06} & 0.0 & 0.0 & (-1.360\times10^{-06}+9.785\times10^{-09}j)\\0.0 & (4.927\times10^{-05}+5.798\times10^{-07}j) & (-6.825\times10^{-05}-2.628\times10^{-06}j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & 3.466\times10^{-06} & (-1.444\times10^{-06}+1.217\times10^{-08}j) & 0.0\\0.0 & (-1.237\times10^{-05}-1.515\times10^{-07}j) & (1.592\times10^{-05}+7.139\times10^{-07}j) & 0.0 & 0.0 & \cdots & 0.0 & 0.0 & (-1.444\times10^{-06}-1.217\times10^{-08}j) & 7.649\times10^{-07} & 0.0\\(-2.435\times10^{-05}-8.046\times10^{-07}j) & 0.0 & 0.0 & (1.610\times10^{-05}+4.199\times10^{-07}j) & (-1.033\times10^{-05}-2.020\times10^{-07}j) & \cdots & (2.063\times10^{-06}+3.414\times10^{-08}j) & (-1.360\times10^{-06}-9.785\times10^{-09}j) & 0.0 & 0.0 & 6.148\times10^{-07}\\\end{pmatrix}\end{equation*}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+==================== Steadystate expectation values
+R\_ob:  [0.2676453077208649, 0.15602055141290413]
+R\_eb:  [0.2676453077208649, 0.15602055141290413]
+L   :  [0.44655609815402086, 0.22225842348795105]
+==================== Dynamics final states
+R:  [0.2676472156697185, 0.15602106817515557]
+L:  [0.44662603050034932, 0.22228388401493518]
+    \end{Verbatim}
+
+
+    \subsection{Versions}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}19}]:} \PY{k+kn}{from} \PY{n+nn}{qutip.ipynbtools} \PY{k+kn}{import} \PY{n}{version\PYZus{}table}
+         
+         \PY{n}{version\PYZus{}table}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+            \begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}19}]:} <IPython.core.display.HTML at 0x7f972e7c2c18>
+\end{Verbatim}
+        
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+    \end{document}
