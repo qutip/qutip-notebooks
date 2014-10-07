@@ -72,6 +72,13 @@ http://nbviewer.ipython.org:
  * [development-smesolve-milstein-speed-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-milstein-speed-test.ipynb)
 
 
+### Quantum Control: GRAPE
+
+ * [development-control-grape-single-qubit-rotation](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-single-qubit-rotation.ipynb)
+ * [development-control-grape-iswap](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-iswap.ipynb)
+ * [development-control-grape-cnot](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-cnot.ipynb)
+ * [development-control-grape-toffoli](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-toffili.ipynb)
+
 ## Benchmark notebooks
 
  * [development-benchmark-steadystate-1](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-steadystate-solver-benchmarks-1.ipynb)
