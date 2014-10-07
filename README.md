@@ -36,6 +36,7 @@ http://nbviewer.ipython.org:
  * [example-quantum-process-tomography](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-process-tomography.ipynb)
  * [example-spin-chain](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain.ipynb)
  * [example-quantum-gates](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-quantum-gates.ipynb)
+ * [example-qip-toffoli-cnot](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-qip-toffoli-cnot.ipynb)
  * [example-spin-chain-model](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-spin-chain-model.ipynb)
  * [example-qubism-and-schmidt-plots](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-qubism-and-schmidt-plots.ipynb)
 
