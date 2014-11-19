@@ -1,0 +1,156 @@
+<style>
+@import url('http://fonts.googleapis.com/css?family=Source+Sans+Pro');
+@import url('http://fonts.googleapis.com/css?family=Source+Code+Pro');
+
+body {
+    -webkit-font-smoothing: antialiased;
+    font-family: "Source Sans Pro", Helvetica, Arial, Verdana, sans-serif;
+}
+
+
+div.cell{
+    width:768px;
+    margin-left:10% !important;
+    margin-right:auto;
+}
+h1 {
+    font-family: "Source Sans Pro", ,Helvetica, Arial, serif;
+}
+h4{
+    font-family: "Source Sans Pro", Helvetica, Arial, serif;
+	margin-top:12px;
+    margin-bottom: 3px;
+   }
+div.text_cell_render{
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    line-height: 125%;
+    font-size: 110%;
+    width:768px;
+    margin-left:auto;
+    margin-right:auto;
+}
+.CodeMirror{
+        font-family: "Source Code Pro", source-code-pro, Consolas, monospace;
+}
+.prompt{
+    display: None;
+}
+.text_cell_render h5 {
+    font-family: "Source Sans Pro", Helvetica, Arial, serif;
+    font-size: 20pt;
+    color: #0001E0;
+    margin-bottom: .5em;
+    margin-top: 0.5em;
+    display: block;
+}
+
+.warning{
+    color: rgb( 240, 20, 20 )
+    }  
+
+a {
+    color: #0D68AE;
+    text-decoration: none;
+    -webkit-transition: color 0.2s ease-in-out;
+    -moz-transition: color 0.2s ease-in-out;
+    -o-transition: color 0.2s ease-in-out;
+    -ms-transition: color 0.2s ease-in-out;
+    transition: color 0.2s ease-in-out;
+}
+a:hover {
+    color: #54ABE0;
+}
+
+table {
+    border: 0px solid rgba(0, 0, 0, 0.25);
+    border-collapse: collapse;
+    display: table;
+    empty-cells: hide;
+    margin: -1px 0 1.3125em;
+    padding: 0;
+    table-layout: fixed;
+}
+caption {
+    display: table-caption;
+    font-weight: 700;
+}
+col {
+    display: table-column;
+}
+colgroup {
+    display: table-column-group;
+}
+tbody {
+    display: table-row-group;
+}
+tfoot {
+    display: table-footer-group;
+}
+thead {
+    display: table-header-group;
+}
+td, th {
+    display: table-cell;
+}
+tr {
+    display: table-row;
+}
+table th, table td {
+    font-size: 1.1em;
+    line-height: 23px;
+    padding: 0 1em;
+}
+table thead {
+    background: rgba(0, 0, 0, 0.15);
+    border: 0px solid rgba(0, 0, 0, 0.15);
+    border-bottom: 0px solid rgba(0, 0, 0, 0.2);
+}
+table tbody {
+    background: #FFFFFF;
+}
+table tfoot {
+    background: rgba(0, 0, 0, 0.15);
+    border: 0px solid rgba(0, 0, 0, 0.15);
+    border-top: 0px solid rgba(0, 0, 0, 0.2);
+}
+
+figure {
+    display: inline-block;
+    position: relative;
+    margin: 1em 0 2em;
+}
+figcaption {
+    font-style: italic;
+    text-align: center;
+    background: white;
+    color: #666;
+    position: absolute;
+    left: 0;
+    bottom: -24px;
+    width: 98%;
+    padding: 1%;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    -o-transition: all 0.2s ease-in-out;
+    -ms-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+
+</style>
+
+<script>
+    MathJax.Hub.Config({
+                        TeX: {equationNumbers: { autoNumber: "AMS" },  
+                           extensions: ["AMSmath.js"]
+                           },
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+                },
+                displayAlign: 'center', // Change this to 'center' to center equations.
+                "HTML-CSS": {
+                    styles: {'.MathJax_Display': {"margin": 4}}
+                }
+        });
+</script>
