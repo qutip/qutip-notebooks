@@ -162,7 +162,7 @@ div.output_scroll {
     box-shadow: none;
     border-radius: 0;
     border: none;
-    font-family: lato;
+    font-family: "Source Sans Pro", Helvetica, Arial, serif;
     font-weight: 400;
 }
 
@@ -195,7 +195,7 @@ div#notebook {
 }
 
 #header {
-    font-family: lato;
+    font-family: "Source Sans Pro", Helvetica, Arial, serif;
 }
 
 #notebook_name {
