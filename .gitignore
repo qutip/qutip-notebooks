@@ -1,9 +1,11 @@
+*.pyx
+*.py
 *.py[cod]
 *~
 .ipynb_checkpoints
 examples/.ipynb_checkpoints
 development/.ipynb_checkpoints
-
+development/ctrl_*.txt
 
 # C extensions
 *.so
