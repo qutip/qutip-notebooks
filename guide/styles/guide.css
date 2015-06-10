@@ -92,6 +92,10 @@ a:hover {
     color: #8C0028;
 }
 
+li li{
+    font-size:14px;
+}
+
 table a:link {
     color: #666;
     font-weight: bold;
