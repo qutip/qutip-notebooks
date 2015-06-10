@@ -92,8 +92,13 @@ a:hover {
     color: #8C0028;
 }
 
+li{
+    margin-bottom:10px;
+}
+
 li li{
     font-size:14px;
+    margin-bottom:2px;
 }
 
 table a:link {
