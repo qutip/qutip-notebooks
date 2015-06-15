@@ -96,6 +96,46 @@ li li{
     font-size:14px;
 }
 
+div.danger {    
+    background-color: #F7A7AA;
+    border-color: #F1595F;
+    border: 2px solid #F1595F;
+    border-radius: 5px;
+    padding-top: 0.5ex;
+    padding-bottom: 0.5ex;
+    padding-left: 0.5em;
+    }
+
+div.warn {    
+background-color: #FBD1A7;
+border-color: #F9A65A;
+border: 2px solid #F9A65A;
+border-radius: 5px;
+padding-top: 0.5ex;
+padding-bottom: 0.5ex;
+padding-left: 0.5em;
+}
+
+div.info {    
+background-color: #A6CBE9;
+border-color: #599AD3;
+border: 2px solid #599AD3;
+border-radius: 5px;
+padding-top: 0.5ex;
+padding-bottom: 0.5ex;
+padding-left: 0.5em;
+}
+
+div.success {    
+background-color: #B9E0B0;
+border-color: #79C36A;
+border: 2px solid #79C36A;
+border-radius: 5px;
+padding-top: 0.5ex;
+padding-bottom: 0.5ex;
+padding-left: 0.5em;
+}
+
 table a:link {
     color: #666;
     font-weight: bold;
