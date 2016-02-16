@@ -12,13 +12,28 @@ various related parts in a module in a single location.
 To open these files, start an IPython notebook server by running the following
 command in the directory that contains the files:
 
+    $ jupyter notebook
+    
+or, if you have an old version of IPython installed
+    
     $ ipython notebook
-
+    
 This will open a new page in your web browser, showing the IPython notebook
 dashboard page with an index of all the notebooks.
 
-# Online read-only versions
+Older notebooks are in v3 format. Some of the newer notebooks are in v4 format.
+If you are using a version of IPython notebook that does not support v4 format.
+(which would be v3.0.0 or lower), then you can convert these notebooks using:
 
+    $ jupyter nbconvert --to notebook --nbformat 3 <nb_to_convert>
+    
+# Interactive online versions
+
+This is a currently (Feb 2016) running in a beta host service binder,
+which seems to running well.
+[![Binder](http://img.shields.io/badge/launch-binder-ff69b4.svg?style=flat)](http://mybinder.org/repo/qutip/qutip-notebooks)
+    
+# Online read-only versions
 
 You can also view the notebooks online, as read-only HTML pages rendered by
 http://nbviewer.ipython.org:
@@ -44,6 +59,20 @@ http://nbviewer.ipython.org:
 
  * [example-brmesolve](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve.ipynb)
  * [example-brmesolve-steadystate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve-steadystate.ipynb)
+
+### Optimal control
+
+ * [Optimal control overview](http://nbviewer.ipython.org/github/qutip/qutip-notebooks/blob/master/examples/example-optimal-control-overview.ipynb)
+ * [Hadamard](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-pulseoptim-Hadamard.ipynb)
+ * [Quantum Fourier Transform](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-pulseoptim-QFT.ipynb)
+ * [Lindbladian](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-pulseoptim-Lindbladian.ipynb)
+ * [Symplectic](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-pulseoptim-symplectic.ipynb)
+ * [QFT (CRAB)](http://nbviewer.ipython.org/github/qutip/qutip-notebooks/blob/master/examples/example-control-pulseoptim-CRAB-QFT.ipynb)
+ * [state to state (CRAB)](http://nbviewer.ipython.org/github/qutip/qutip-notebooks/blob/master/examples/example-control-pulseoptim-CRAB-2qubitInerac.ipynb)
+ * [CNOT](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-grape-cnot.ipynb)
+ * [iSWAP](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-grape-iswap.ipynb) 
+ * [Single-qubit rotation](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-grape-single-qubit-rotation.ipynb)
+ * [Toffoli gate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-control-grape-toffoli.ipynb)
 
 # Development notebooks
 
@@ -71,14 +100,6 @@ http://nbviewer.ipython.org:
  * [development-smesolve-inefficient-detection](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-inefficient-detection.ipynb)
  * [development-smesolve-heterodyne](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-heterodyne.ipynb)
  * [development-smesolve-milstein-speed-test](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-smesolve-milstein-speed-test.ipynb)
-
-
-### Quantum Control: GRAPE
-
- * [development-control-grape-single-qubit-rotation](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-single-qubit-rotation.ipynb)
- * [development-control-grape-iswap](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-iswap.ipynb)
- * [development-control-grape-cnot](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-cnot.ipynb)
- * [development-control-grape-toffoli](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/development/development-control-grape-toffoli.ipynb)
 
 ## Benchmark notebooks
 
