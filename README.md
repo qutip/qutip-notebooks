@@ -60,6 +60,11 @@ http://nbviewer.ipython.org:
  * [example-brmesolve](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve.ipynb)
  * [example-brmesolve-steadystate](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-brmesolve-steadystate.ipynb)
 
+### Two-time correlations with time-dependent Liouvillians
+
+ * [example-pulse-wise-second-order-coherence-g2](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-pulse-wise-second-order-coherence-g2.ipynb)
+ * [example-pulse-wise-two-photon-interference](http://nbviewer.ipython.org/urls/raw.github.com/qutip/qutip-notebooks/master/examples/example-pulse-wise-two-photon-interference.ipynb)
+
 ### Optimal control
 
  * [Optimal control overview](http://nbviewer.ipython.org/github/qutip/qutip-notebooks/blob/master/examples/example-optimal-control-overview.ipynb)
