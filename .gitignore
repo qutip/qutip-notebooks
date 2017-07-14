@@ -6,6 +6,7 @@
 examples/.ipynb_checkpoints
 development/.ipynb_checkpoints
 development/ctrl_*.txt
+examples/ctrl_*.txt
 
 # C extensions
 *.so
