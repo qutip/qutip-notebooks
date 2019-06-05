@@ -6,7 +6,7 @@ dependencies:
 - pip==19.*
 - cython
 - numpy
-- scipy
+- scipy==1.2.1
 - matplotlib
 - notebook
 - qutip
