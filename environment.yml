@@ -2,11 +2,11 @@ name: Qutip-env
 channels:
 - conda-forge
 dependencies:
-- python==3.7
+- python==3.7.3
 - pip==19.*
-- cython
-- numpy
-- scipy
-- matplotlib
-- notebook
-- qutip
+- cython==0.29.8
+- numpy==1.16.4
+- scipy==1.2.1
+- matplotlib=3.1.0
+- qutip==4.3.1
+- imagemagick=7.0.8_49
