@@ -30,9 +30,13 @@ If you are using a version of IPython notebook that does not support v4 format.
 # Interactive online versions
 
 This is currently (Jul 2019) running on the host service provided by My Binder.
-[![Binder](http://img.shields.io/badge/launch-binder-ff69b4.svg?style=flat)](http://mybinder.org/repo/qutip/qutip-notebooks)
+[![Binder](http://img.shields.io/badge/launch-binder-ff69b4.svg?style=flat)](http://mybinder.org/repo/qutip/qutip-notebooks/binder)
     
 # Online read-only versions
 
 You can also view the notebooks online, as read-only HTML pages rendered by
-http://nbviewer.ipython.org. The notebooks are rendered also by My Binder. [![Binder](http://img.shields.io/badge/launch-binder-ff69b4.svg?style=flat)](http://mybinder.org/repo/qutip/qutip-notebooks) 
+http://nbviewer.ipython.org. The notebooks are rendered also by My Binder. [![Binder](http://img.shields.io/badge/launch-binder-ff69b4.svg?style=flat)](http://mybinder.org/repo/qutip/qutip-notebooks/binder).
+
+# Tutorials and lectures
+
+The notebooks are organized with tutorials and lectures on [http://qutip.org/tutorials.html](http://qutip.org/dtutorials.html).
