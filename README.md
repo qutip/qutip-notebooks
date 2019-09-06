@@ -39,4 +39,4 @@ http://nbviewer.ipython.org. The notebooks are rendered also by My Binder. [![Bi
 
 # Tutorials and lectures
 
-The notebooks are organized with tutorials and lectures on [http://qutip.org/tutorials.html](http://qutip.org/dtutorials.html).
+The notebooks are organized with tutorials and lectures on [http://qutip.org/tutorials.html](http://qutip.org/tutorials.html).
