@@ -40,3 +40,19 @@ http://nbviewer.ipython.org. The notebooks are rendered also by My Binder. [![Bi
 # Tutorials and lectures
 
 The notebooks are organized with tutorials and lectures on [index.ipynb](index.ipynb).
+
+# Contribute
+
+You are most welcome to contribute to the QuTiP notebooks  by forking this
+repository and sending pull requests, or filing bug reports at the
+[issues page](http://github.com/qutip/qutip-notebooks/issues), or send us bug reports,
+questions, or your proposed changes to our
+[QuTiP discussion group](http://groups.google.com/group/qutip).
+
+All contributions are acknowledged in the
+[contributors](http://github.com/qutip/qutip-doc/blob/master/contributors.rst)
+section in the documentation.
+
+Note that all notebook contributions must have a ```qutip.about()``` line at the end for reproducibility purposes. It is also encouraged to add the notebook to the [tutorial page](http://qutip.org/tutorials.html) and the [index](index.ipynb).
+
+For more information, including technical advice, please see [Contributing to QuTiP development](https://github.com/qutip/qutip-doc/blob/master/qutip_dev_contrib.md).
