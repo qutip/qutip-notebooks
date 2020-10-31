@@ -13,11 +13,11 @@ To open these files, start an IPython notebook server by running the following
 command in the directory that contains the files:
 
     $ jupyter notebook
-    
+
 or, if you have an old version of IPython installed
-    
+
     $ ipython notebook
-    
+
 This will open a new page in your web browser, showing the IPython notebook
 dashboard page with an index of all the notebooks.
 
@@ -26,12 +26,12 @@ If you are using a version of IPython notebook that does not support v4 format.
 (which would be v3.0.0 or lower), then you can convert these notebooks using:
 
     $ jupyter nbconvert --to notebook --nbformat 3 <nb_to_convert>
-    
+
 # Interactive online versions
 
 This is currently (Jul 2019) running on the host service provided by My Binder.
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/qutip/qutip-notebooks/master?filepath=index.ipynb)
-    
+
 # Online read-only versions
 
 You can also view the notebooks online, as read-only HTML pages rendered by
@@ -55,4 +55,4 @@ section in the documentation.
 
 Note that all notebook contributions must have a ```qutip.about()``` line at the end for reproducibility purposes. It is also encouraged to add the notebook to the [tutorial page](http://qutip.org/tutorials.html) and the [index](index.ipynb).
 
-For more information, including technical advice, please see [Contributing to QuTiP development](https://github.com/qutip/qutip-doc/blob/master/qutip_dev_contrib.md).
+For more information, including technical advice, please see [Contributing to QuTiP development](https://github.com/qutip/qutip-doc/blob/master/CONTRIBUTING.md).
