@@ -4,9 +4,12 @@ channels:
 dependencies:
 - python==3.7.3
 - pip==19.*
-- cython==0.29.8
-- numpy==1.16.4
+- cython==0.29.20
+- numpy==1.19
 - scipy==1.2.1
-- matplotlib=3.0.3
+- matplotlib==3.0.3
+- imagemagick==7.0.8_49
+- ipython==7.10
 - qutip==4.6
-- imagemagick=7.0.8_49
+- pip:
+  - qutip-qip==0.1.0
