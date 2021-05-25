@@ -8,5 +8,5 @@ dependencies:
 - numpy==1.16.4
 - scipy==1.2.1
 - matplotlib=3.0.3
-- qutip==4.4.0
+- qutip==4.6
 - imagemagick=7.0.8_49
