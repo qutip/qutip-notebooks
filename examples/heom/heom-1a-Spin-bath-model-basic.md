@@ -64,7 +64,6 @@ Note that in the above, and the following, we set $\hbar = k_\mathrm{B} = 1$.
 
 Note that in the above, and the following, we set $\hbar = k_\mathrm{B} = 1$.
 
-
 ```{code-cell} ipython3
 %pylab inline
 from qutip import *
@@ -76,13 +75,11 @@ from qutip import *
 ```
 
 ```{code-cell} ipython3
-
-from bofin.heom import BosonicHEOMSolver
-from bofin.heom import HSolverDL
+from qutip.nonmarkov.bofin import BosonicHEOMSolver
+from qutip.nonmarkov.bofin import HSolverDL
 ```
 
 ```{code-cell} ipython3
-
 def cot(x):
     return 1./np.tan(x)
 ```
@@ -114,7 +111,6 @@ beta = 1./T
 #HEOM parameters
 NC = 5 # cut off parameter for the bath
 
-
 ```
 
 ```{code-cell} ipython3
@@ -130,7 +126,6 @@ fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
 axes.plot(wlist, J, 'r', linewidth=2)
 axes.set_xlabel(r'$\omega$', fontsize=28)
 axes.set_ylabel(r'J', fontsize=28)
-
 ```
 
 ```{code-cell} ipython3
@@ -180,11 +175,9 @@ vkAR.extend([2 * np.pi * k * T for k in range(1,Nk+1)])
 ckAI = [lam * gamma * (-1.0)]
 
 vkAI = [gamma]
-
 ```
 
 ```{code-cell} ipython3
-
 NR = len(ckAR)
 NI = len(ckAI)
 Q2 = [Q for kk in range(NR+NI)]
@@ -318,7 +311,6 @@ rho0 = basis(2,0) * basis(2,0).dag()
 
 
 resultMatsT = HEOMMatsT.run(rho0, tlist)
-
 ```
 
 ```{code-cell} ipython3
@@ -348,7 +340,6 @@ P12BR = expect(outputBR.states, P12p)
 ```
 
 ```{code-cell} ipython3
-
 # Plot the results
 fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
 #axes.plot(tlist, np.real(P11exp)+ np.real(P22exp), 'b', linewidth=2, label="P11")
@@ -357,7 +348,7 @@ axes.plot(tlist, np.real(P12exp), 'r', linewidth=2, label="P12 Mats")
 axes.plot(tlist, np.real(P11expT), 'b--', linewidth=2, label="P11 Mats + Term")
 axes.plot(tlist, np.real(P12expT), 'r--', linewidth=2, label="P12 Mats + Term")
 axes.plot(tlist, np.real(P11BR), 'g--', linewidth=2, label="P11 Bloch Redfield")
-axes.plot(tlist, np.real(P12BR), 'g--', linewidth=2, label="P11 Bloch Redfield")
+axes.plot(tlist, np.real(P12BR), 'g--', linewidth=2, label="P12 Bloch Redfield")
 axes.set_xlabel(r't', fontsize=28)
 axes.legend(loc=0, fontsize=12)
 ```
@@ -513,10 +504,6 @@ ax1.legend()
 ```
 
 ```{code-cell} ipython3
-
-```
-
-```{code-cell} ipython3
 #put pade parameters in lists for heom solver
 ckAR = [real(eta) +0j for eta in etapLP]
 ckAI = [imag(etapLP[0]) + 0j]
@@ -525,8 +512,6 @@ vkAI = [gampLP[0] + 0j]
 ```
 
 ```{code-cell} ipython3
-
-
 NR = len(ckAR)
 NI = len(ckAI)
 Q2 = [Q for kk in range(NR+NI)]
@@ -544,7 +529,6 @@ resultPade = HEOMPade.run(rho0, tlist)
 ```
 
 ```{code-cell} ipython3
-
 # Define some operators with which we will measure the system
 # 1,1 element of density matrix - corresonding to groundstate
 P11p=basis(2,0) * basis(2,0).dag()
@@ -572,28 +556,22 @@ axes.legend(loc=0, fontsize=12)
 ### Next we do fitting of correlation, and compare to Mats and Pade.  We collect again a large sum of matsubara terms for many time steps
 
 ```{code-cell} ipython3
-
-tlist2= linspace(0,2,10000)
-
-
-lmaxmats = 15000
-
-def c(t,anamax):
-
-    c_temp = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
+def c_R(t, anamax):
+    c = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
     for k in range(1, anamax):
         vk = 2 * np.pi * k * T
-        c_temp += ((pref * 4 * lam * gamma * T * vk / (vk**2 - gamma**2))  * np.exp(- vk * t) ) 
-        
-    
-    return c_temp
+        c += ((pref * 4 * lam * gamma * T * vk / (vk**2 - gamma**2))  * np.exp(- vk * t) )
+    return c
 
-# Reals parts
-corrRana = [np.real(c(t,lmaxmats)) for t in tlist2]
-# Imaginary parts
-corrIana = [np.imag((pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))) for t in tlist2]
+def c_I(t):
+    c = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
+    return c
 
+lmaxmats = 15000
+tlist2 = linspace(0,2,10000)
 
+corrRana = np.real(c_R(tlist2, lmaxmats))
+corrIana = np.imag(c_I(tlist2))
 ```
 
 ```{code-cell} ipython3
@@ -691,7 +669,6 @@ vkAR1 = list(popt1[k-1])[len(list(popt1[k-1]))//2:]
 vkAR = [-x+0j for x in vkAR1]
 vkAI1 = list(popt2[k1-1])[len(list(popt2[k1-1]))//2:]
 vkAI = [-x+0j for x in vkAI1]
-
 ```
 
 ```{code-cell} ipython3
@@ -706,7 +683,6 @@ print(vkAI)
 ```
 
 ```{code-cell} ipython3
-
 NC = 8
 
 NR = len(ckAR)
@@ -720,7 +696,6 @@ HEOMFit = BosonicHEOMSolver(Hsys, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=option
 ```
 
 ```{code-cell} ipython3
-
 
 
 
