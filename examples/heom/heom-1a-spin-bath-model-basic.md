@@ -263,7 +263,7 @@ class.
 
 The class constructs the "right hand side" (RHS) determinining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
 
-Below we create the solver and the solve for the dynamics by calling `.run(rh0, tlist)`.
+Below we create the solver and the solve for the dynamics by calling `.run(rho0, tlist)`.
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
