@@ -156,6 +156,11 @@ def dl_corr_approx(t, nk):
 ```{code-cell} ipython3
 @contextlib.contextmanager
 def timer(label):
+    """ Simple utility for timing functions:
+    
+        with timer("name"):
+            ... code to time ...
+    """
     start = time.time()
     yield
     end = time.time()
@@ -396,85 +401,70 @@ fig.savefig("figures/docsfig1.png")
 The Matsubara decomposition is not the only option.  We can also use the faster-converging Pade decomposition.
 
 ```{code-cell} ipython3
-lmax = 2
-
 def deltafun(j,k):
-    if j==k: 
+    if j == k: 
         return 1.
     else:
         return 0.
 
-Alpha =np.zeros((2*lmax,2*lmax))
-for j in range(2*lmax):
-    for k in range(2*lmax):
-        #Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)-1)*(2*(k+1)-1))  # fermionic (see other example notebooks)
-        Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1)) # bosonic
+def pade_eps(lmax):
+    Alpha = np.zeros((2 * lmax, 2 * lmax))
+    for j in range(2 * lmax):
+        for k in range(2 * lmax):
+            # fermionic (see other example notebooks):
+            # Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)-1)*(2*(k+1)-1))
+            # bosonic:
+            Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1))
         
-eigvalsA=eigvalsh(Alpha)  
+    eigvalsA = eigvalsh(Alpha)
+    eps = [-2/val for val in eigvalsA[0: lmax]]
+    return eps
 
-eps = []
-for val in  eigvalsA[0:lmax]:
-    #print(-2/val)
-    eps.append(-2/val)
+def pade_chi(lmax):
+    AlphaP = np.zeros((2 * lmax - 1, 2 * lmax - 1))
+    for j in range(2 * lmax - 1):
+        for k in range(2 * lmax - 1):
+            # fermionic:
+            # AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1))
+            # bosonic [this is +3 because +1 (bose) + 2*(+1)(from bm+1)]:
+            AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+3)*(2*(k+1)+3))
+
+    eigvalsAP = eigvalsh(AlphaP)
+    chi = [-2/val for val in eigvalsAP[0: lmax - 1]]
+    return chi
+
+def pade_kappa_epsilon(lmax):
+    eps = pade_eps(lmax)
+    chi = pade_chi(lmax)
     
+    kappa = [0]
+    prefactor = 0.5 * lmax * (2 * (lmax + 1) + 1)
 
-AlphaP =np.zeros((2*lmax-1,2*lmax-1))
-for j in range(2*lmax-1):
-    for k in range(2*lmax-1):
-        #AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1))  # fermionic        
-        AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+3)*(2*(k+1)+3)) # bosonic: This is +3 because +1 (bose) + 2*(+1)(from bm+1)
+    for j in range(lmax):
+        term = prefactor
+        for k in range(lmax - 1):
+            term *= (chi[k]**2 - eps[j]**2) / (eps[k]**2 - eps[j]**2 + deltafun(j, k))
+
+        for k in range(lmax-1, lmax):
+            term /= (eps[k]**2 - eps[j]**2 + deltafun(j, k))
+
+        kappa.append(term)
         
-eigvalsAP=eigvalsh(AlphaP)    
+    epsilon = [0] + eps
 
-chi = []
-for val in  eigvalsAP[0:lmax-1]:
+    return kappa, epsilon
+
+def pade_corr(tlist, lmax):
+    kappa, epsilon = pade_kappa_epsilon(lmax)
     
-    chi.append(-2/val)
+    eta_list = [lam * gamma * (cot(gamma * beta / 2.0) - 1.0j)]
+    gamma_list = [gamma]
     
-eta_list = []
-prefactor = 0.5*lmax*(2*(lmax + 1) + 1)
-
-for j in range(lmax):
-    term = prefactor
-    for k1 in range(lmax - 1):
-        term *= (chi[k1]**2 - eps[j]**2)/(eps[k1]**2 - eps[j]**2 + deltafun(j,k1))        
-    
-    for k2 in range(lmax-1,lmax):
-        term /= (eps[k2]**2 - eps[j]**2 + deltafun(j,k2))
-        
-        
-    eta_list.append(term)
-
-kappa = [0]+eta_list
-epsilon = [0]+eps
-
-beta = 1/T
-
-def f_approx(x):
-    f = 0.5
-    for l in range(1,lmax+1):
-        f= f - 2*kappa[l]*x/(x**2+epsilon[l]**2)
-    return f
-
-def f(x):
-    kB=1.
-    return 1/(1-exp(-x)) #this is n(w)+1 (for bosons)
-
-
-def C(tlist):
-    eta_list = []
-    gamma_list  =[]
-    
-    eta_0 =lam*gamma*(1.0/np.tan(gamma*beta/2.0) - 1.0j)
-    gamma_0 = gamma
-    eta_list.append(eta_0)
-    gamma_list.append(gamma_0)
-    if lmax>0:
-        for l in range(1,lmax+1):
+    if lmax > 0:
+        for l in range(1, lmax + 1):
             eta_list.append((kappa[l]/beta)*4*lam*gamma*(epsilon[l]/beta)/((epsilon[l]**2/beta**2)-gamma**2))
             gamma_list.append(epsilon[l]/beta)
             
-     
     c_tot = []
     for t in tlist:
         c_tot.append(sum([eta_list[l]*exp(-gamma_list[l]*t) for l in range(lmax+1)]))
@@ -482,7 +472,7 @@ def C(tlist):
 
 
 tlist_corr = linspace(0, 2, 100)
-cppLP, etapLP, gampLP = C(tlist_corr)
+cppLP, etapLP, gampLP = pade_corr(tlist_corr, 2)
 corr_15k = dl_corr_approx(tlist_corr, 15_000)
 corr_2k = dl_corr_approx(tlist_corr, 2)
 
