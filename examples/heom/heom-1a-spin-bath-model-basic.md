@@ -190,6 +190,8 @@ beta = 1./T
 NC = 5 # cut off parameter for the bath
 ```
 
+### First of all, it is useful to look at the spectral density, to understand its magnitude and width, relative to the system properties:
+
 ```{code-cell} ipython3
 def plot_spectral_density():
     """ Plot the Drude-Lorentz spectral density """
@@ -204,24 +206,44 @@ def plot_spectral_density():
 plot_spectral_density()
 ```
 
+Next we calculate the exponents using the Matsubara decompositions. Here we split them into real and imaginary parts.
+
+The HEOM code will optimize these, and reduce the number of exponents when real and imaginary parts have the same
+exponent.This is clearly the case for the first term in the vkAI and vkAR lists.
+
 ```{code-cell} ipython3
 Nk = 2
 ckAR, vkAR, ckAI, vkAI = dl_matsubara_params_ri(nk=Nk, lam=lam, gamma=gamma, T=T)
+```
+
+Having created the lists which specify the bath correlation functions, we pass them to the `BosonicHEOMSolver` class:
+
+```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
 with timer("Construction time"):
     HEOMMats = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-
-with timer("ODE solver time"):
-    resultMats = HEOMMats.run(rho0, tlist) #normal  115
 ```
 
+The class constructs the "right-hand-side" determnining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
+
+Here we demonstrate dynamics:
+
 ```{code-cell} ipython3
-# Compare to legacy class 
+with timer("ODE solver time"):
+    resultMats = HEOMMats.run(rho0, tlist)
+```
+
+We also provide a legacy class, `HSolverDL`, which calculates the Drude-Lorentz correlation functions automatically, to be backwards compatible with the previous HEOM solver in QuTiP:
+
+```{code-cell} ipython3
+# Compare to legacy class
+
+# The legacy class performs the above collation of co-oefficients automatically, based upon the
+# parameters for the Drude-Lorentz spectral density.
 
 with timer("Construction time"):
-    HEOMlegacy = HSolverDL(Hsys, Q, lam, T, NC, Nk, gamma,options=options)
-
+    HEOMlegacy = HSolverDL(Hsys, Q, lam, T, NC, Nk, gamma, options=options)
 
 with timer("ODE solver time"):
     resultlegacy = HEOMlegacy.run(rho0, tlist) #normal  115
@@ -234,7 +256,7 @@ P11p = basis(2,0) * basis(2,0).dag()
 P22p = basis(2,1) * basis(2,1).dag()
 # 1,2 element of density matrix  - corresonding to coherence
 P12p = basis(2,0) * basis(2,1).dag()
-# Calculate expectation values in the bases
+# Calculate expectation values
 P11exp = expect(resultMats.states, P11p)
 P22exp = expect(resultMats.states, P22p)
 P12exp = expect(resultMats.states, P12p)
@@ -246,7 +268,7 @@ P12legacy = expect(resultlegacy.states, P12p)
 
 ## Ishizaki-Tanimura Terminator
 
-The value of $Re[C(t=0)]$ diverges. We can treat that component as a delta-function distribution, and include it as Lindblad correction. This is sometimes known as the Ishizaki-Tanimura Terminator.
+To speed up convergence (in terms of the number of exponents kept in the Matsubara decomposition), We can treat the $Re[C(t=0)]$ component as a delta-function distribution, and include it as Lindblad correction. This is sometimes known as the Ishizaki-Tanimura Terminator.
 
 In more detail, given
 
@@ -256,6 +278,8 @@ C(t)=\sum_{k=0}^{\infty} c_k e^{-\nu_k t}
 since $\nu_k=\frac{2 \pi k}{\beta }$, if $1/\nu_k$ is much much smaller than other important time-scales, we can approximate,  $ e^{-\nu_k t} \approx \delta(t)/\nu_k$, and $C(t)=\sum_{k=N_k}^{\infty} \frac{c_k}{\nu_k} \delta(t)$
 
 It is convenient to calculate the whole sum $C(t)=\sum_{k=0}^{\infty} \frac{c_k}{\nu_k} =  2 \lambda / (\beta \gamma) - i\lambda $, and subtract off the contribution from the finite number of Matsubara terms that are kept in the hierarchy, and treat the residual as a Lindblad.
+
+This is clearer if we plot the correlation function with a large number of Matsubara terms:
 
 ```{code-cell} ipython3
 def plot_correlation_expansion_divergence(): 
@@ -282,8 +306,13 @@ def plot_correlation_expansion_divergence():
 plot_correlation_expansion_divergence()
 ```
 
+Lets evaluate the result including this Ishizaki-Tanimura terminator:
+
 ```{code-cell} ipython3
-#do version with tanimura terminator
+# Run HEOM solver and include the Ishizaki-Tanimura terminator
+
+# Note that in the legacy HSolverDL function the terminator is included automatically if
+# the parameter bnd_cut_approx=True is used.
 
 op = -2*spre(Q)*spost(Q.dag()) + spre(Q.dag()*Q) + spost(Q.dag()*Q)
 
@@ -294,7 +323,7 @@ for k in range(1,Nk+1):
     vk = 2 * np.pi * k * T
     
     approx_factr -= ((4 * lam * gamma * T * vk / (vk**2 - gamma**2))/ vk)
-  
+
 L_bnd = -approx_factr*op
 
 Ltot = -1.0j*(spre(Hsys)-spost(Hsys)) + L_bnd
@@ -319,6 +348,8 @@ P11expT = expect(resultMatsT.states, P11p)
 P22expT = expect(resultMatsT.states, P22p)
 P12expT = expect(resultMatsT.states, P12p)
 ```
+
+We can compare the solution obtained from the QuTiP Bloch-Redfield solver:
 
 ```{code-cell} ipython3
 DL = " 2*pi* 2.0 * {lam} / (pi * {gamma} * {beta})  if (w==0) else 2*pi*(2.0*{lam}*{gamma} *w /(pi*(w**2+{gamma}**2))) * ((1/(exp((w) * {beta})-1))+1)".format(gamma=gamma, beta = beta, lam = lam)
@@ -362,9 +393,9 @@ axes.legend(loc=0, fontsize=12)
 fig.savefig("figures/docsfig1.png")
 ```
 
-```{code-cell} ipython3
-#We can compare the Matsubara result to the faster-converging Pade decomposition
+The Matsubara decomposition is not the only option.  We can also use the faster-converging Pade decomposition.
 
+```{code-cell} ipython3
 lmax = 2
 
 def deltafun(j,k):
@@ -376,8 +407,8 @@ def deltafun(j,k):
 Alpha =np.zeros((2*lmax,2*lmax))
 for j in range(2*lmax):
     for k in range(2*lmax):
-        #Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)-1)*(2*(k+1)-1)) #fermi
-        Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1)) #bose
+        #Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)-1)*(2*(k+1)-1))  # fermionic (see other example notebooks)
+        Alpha[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1)) # bosonic
         
 eigvalsA=eigvalsh(Alpha)  
 
@@ -390,9 +421,8 @@ for val in  eigvalsA[0:lmax]:
 AlphaP =np.zeros((2*lmax-1,2*lmax-1))
 for j in range(2*lmax-1):
     for k in range(2*lmax-1):
-        #AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1)) #fermi
-        
-        AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+3)*(2*(k+1)+3)) #Bose: This is +3 because +1 (bose) + 2*(+1)(from bm+1)
+        #AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+1)*(2*(k+1)+1))  # fermionic        
+        AlphaP[j][k] = (deltafun(j,k+1)+deltafun(j,k-1))/sqrt((2*(j+1)+3)*(2*(k+1)+3)) # bosonic: This is +3 because +1 (bose) + 2*(+1)(from bm+1)
         
 eigvalsAP=eigvalsh(AlphaP)    
 
@@ -521,7 +551,12 @@ axes.set_xlabel(r't', fontsize=28)
 axes.legend(loc=0, fontsize=12)
 ```
 
-### Next we do fitting of correlation, and compare to Mats and Pade.  We collect again a large sum of matsubara terms for many time steps
+### Next we do fitting of correlation functions, and compare the Matsubara and Pade decompositions
+
+This is not efficient for this example, but can be extremely useful in situations where large number of
+exponents are needed (e.g., near zero temperature).
+
+First we collect a large sum of matsubara terms for many time steps:
 
 ```{code-cell} ipython3
 tlist2 = np.linspace(0, 2, 10000)
@@ -532,9 +567,9 @@ corrRana = np.real(corr_15k_t10k)
 corrIana = np.imag(corr_15k_t10k)
 ```
 
-```{code-cell} ipython3
-#We then fit this sum with standard least-squares approach.
+We then fit this sum with standard least-squares approach:
 
+```{code-cell} ipython3
 from scipy.optimize import curve_fit
 def wrapper_fit_func(x, N, *args):
     a, b = list(args[0][:N]), list(args[0][N:2*N])
@@ -638,7 +673,7 @@ print(vkAI)
 NC = 8
 
 options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method="bdf") 
-#BDF because we have a slightly stiff problem
+#BDF method here is faster because we have a slightly stiff problem
 
 HEOMFit = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 ```
@@ -670,6 +705,9 @@ rhoss = rhoss/rhoss.norm()
 P12 = expect(rhoss,P12p)
 P11 = expect(rhoss,P11p)
 ```
+
+Here we construct a reaction coordinate inspired model to capture the steady-state behavior,
+and compare to the HEOM prediction. This result is more accurate for narrow spectral densities.
 
 ```{code-cell} ipython3
 dot_energy, dot_state = Hsys.eigenstates()
