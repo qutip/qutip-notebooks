@@ -154,6 +154,33 @@ def dl_corr_approx(t, nk):
 ```
 
 ```{code-cell} ipython3
+def plot_result_expectations(plots, axes=None):
+    """ Plot the expectation values of operators as functions of time.
+    
+        Each plot in plots consists of (solver_result, measurement_operation, color, label).
+    """
+    if axes is None:
+        fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
+        fig_created = True
+    else:
+        fig = None
+        fig_created = False
+
+    # add kw arguments to each plot if missing
+    plots = [p if len(p) == 5 else p + ({},) for p in plots]
+    for result, m_op, color, label, kw in plots:
+        exp = np.real(expect(result.states, m_op))
+        kw.setdefault("linewidth", 2)
+        axes.plot(result.times, exp, color, label=label, **kw)
+
+    if fig_created:
+        axes.legend(loc=0, fontsize=12)
+        axes.set_xlabel("t", fontsize=28)
+
+    return fig
+```
+
+```{code-cell} ipython3
 @contextlib.contextmanager
 def timer(label):
     """ Simple utility for timing functions:
@@ -183,16 +210,27 @@ rho0 = basis(2,0) * basis(2,0).dag()
 # System-bath coupling (Drude-Lorentz spectral density)
 Q = sigmaz() # coupling operator
 
-tlist = np.linspace(0, 50, 1000)
-
-#Bath properties:
+# Bath properties:
 gamma = .5 # cut off frequency
 lam = .1 # coupling strength
 T = 0.5
 beta = 1./T
 
-#HEOM parameters
+# HEOM parameters
 NC = 5 # cut off parameter for the bath
+Nk = 2 # number of exponents to retain in the Matsubara expansion of the correlation function
+
+# Times to solve for
+tlist = np.linspace(0, 50, 1000)
+```
+
+```{code-cell} ipython3
+# Define some operators with which we will measure the system
+# 1,1 element of density matrix - corresonding to groundstate
+P11p = basis(2,0) * basis(2,0).dag()
+P22p = basis(2,1) * basis(2,1).dag()
+# 1,2 element of density matrix  - corresonding to coherence
+P12p = basis(2,0) * basis(2,1).dag()
 ```
 
 ### First of all, it is useful to look at the spectral density, to understand its magnitude and width, relative to the system properties:
@@ -217,26 +255,31 @@ The HEOM code will optimize these, and reduce the number of exponents when real 
 exponent.This is clearly the case for the first term in the vkAI and vkAR lists.
 
 ```{code-cell} ipython3
-Nk = 2
 ckAR, vkAR, ckAI, vkAI = dl_matsubara_params_ri(nk=Nk, lam=lam, gamma=gamma, T=T)
 ```
 
-Having created the lists which specify the bath correlation functions, we pass them to the `BosonicHEOMSolver` class:
+Having created the lists which specify the bath correlation functions, we pass them to the `BosonicHEOMSolver`
+class.
+
+The class constructs the "right hand side" (RHS) determinining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
+
+Below we create the solver and the solve for the dynamics by calling `.run(rh0, tlist)`.
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
-with timer("Construction time"):
+with timer("RHS construction time"):
     HEOMMats = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-```
-
-The class constructs the "right-hand-side" determnining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
-
-Here we demonstrate dynamics:
-
-```{code-cell} ipython3
+    
 with timer("ODE solver time"):
     resultMats = HEOMMats.run(rho0, tlist)
+```
+
+```{code-cell} ipython3
+plot_result_expectations([
+    (resultMats, P11p, 'b', "P11 Mats"),
+    (resultMats, P12p, 'r', "P12 Mats"),
+]);
 ```
 
 We also provide a legacy class, `HSolverDL`, which calculates the Drude-Lorentz correlation functions automatically, to be backwards compatible with the previous HEOM solver in QuTiP:
@@ -247,28 +290,18 @@ We also provide a legacy class, `HSolverDL`, which calculates the Drude-Lorentz 
 # The legacy class performs the above collation of co-oefficients automatically, based upon the
 # parameters for the Drude-Lorentz spectral density.
 
-with timer("Construction time"):
+with timer("RHS construction time"):
     HEOMlegacy = HSolverDL(Hsys, Q, lam, T, NC, Nk, gamma, options=options)
 
 with timer("ODE solver time"):
-    resultlegacy = HEOMlegacy.run(rho0, tlist) #normal  115
+    resultLegacy = HEOMlegacy.run(rho0, tlist) #normal  115
 ```
 
 ```{code-cell} ipython3
-# Define some operators with which we will measure the system
-# 1,1 element of density matrix - corresonding to groundstate
-P11p = basis(2,0) * basis(2,0).dag()
-P22p = basis(2,1) * basis(2,1).dag()
-# 1,2 element of density matrix  - corresonding to coherence
-P12p = basis(2,0) * basis(2,1).dag()
-# Calculate expectation values
-P11exp = expect(resultMats.states, P11p)
-P22exp = expect(resultMats.states, P22p)
-P12exp = expect(resultMats.states, P12p)
-
-P11legacy = expect(resultlegacy.states, P11p)
-P22legacy = expect(resultlegacy.states, P22p)
-P12legacy = expect(resultlegacy.states, P12p)
+plot_result_expectations([
+    (resultLegacy, P11p, 'b', "P11 Legacy"),
+    (resultLegacy, P12p, 'r', "P12 Legacy"),
+]);
 ```
 
 ## Ishizaki-Tanimura Terminator
@@ -336,65 +369,53 @@ Ltot = liouvillian(Hsys) + L_bnd
 
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
-HEOMMatsT = BosonicHEOMSolver(Ltot, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+with timer("RHS construction time"):
+    HEOMMatsT = BosonicHEOMSolver(Ltot, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 
-resultMatsT = HEOMMatsT.run(rho0, tlist)
+with timer("ODE solver time"):
+    resultMatsT = HEOMMatsT.run(rho0, tlist)
 ```
 
 ```{code-cell} ipython3
-# Define some operators with which we will measure the system
-# 1,1 element of density matrix - corresonding to groundstate
-P11p=basis(2,0) * basis(2,0).dag()
-P22p=basis(2,1) * basis(2,1).dag()
-# 1,2 element of density matrix  - corresonding to coherence
-P12p=basis(2,0) * basis(2,1).dag()
-# Calculate expectation values in the bases
-P11expT = expect(resultMatsT.states, P11p)
-P22expT = expect(resultMatsT.states, P22p)
-P12expT = expect(resultMatsT.states, P12p)
+plot_result_expectations([
+    (resultMatsT, P11p, 'b', "P11 Mats + Term"),
+    (resultMatsT, P12p, 'r', "P12 Mats + Term"),
+]);
 ```
 
 We can compare the solution obtained from the QuTiP Bloch-Redfield solver:
 
 ```{code-cell} ipython3
-DL = " 2*pi* 2.0 * {lam} / (pi * {gamma} * {beta})  if (w==0) else 2*pi*(2.0*{lam}*{gamma} *w /(pi*(w**2+{gamma}**2))) * ((1/(exp((w) * {beta})-1))+1)".format(gamma=gamma, beta = beta, lam = lam)
+DL = (
+    f"2*pi* 2.0 * {lam} / (pi * {gamma} * {beta}) if (w == 0) else "
+    f"2*pi*(2.0*{lam}*{gamma} *w /(pi*(w**2+{gamma}**2))) * ((1/(exp((w) * {beta})-1))+1)"
+)
+options = Options(nsteps=15000, store_states=True,rtol=1e-12,atol=1e-12)
 
-optionsODE = Options(nsteps=15000, store_states=True,rtol=1e-12,atol=1e-12)
-outputBR  =  brmesolve(Hsys, rho0, tlist, a_ops=[[sigmaz(),DL]], options = optionsODE)
-
-
-# Calculate expectation values in the bases
-P11BR = expect(outputBR.states, P11p)
-P22BR = expect(outputBR.states, P22p)
-P12BR = expect(outputBR.states, P12p)
+with timer("ODE solver time"):
+    resultBR = brmesolve(Hsys, rho0, tlist, a_ops=[[sigmaz(), DL]], options=options)
 ```
 
 ```{code-cell} ipython3
-# Plot the results
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-#axes.plot(tlist, np.real(P11exp)+ np.real(P22exp), 'b', linewidth=2, label="P11")
-axes.plot(tlist, np.real(P11exp), 'b', linewidth=2, label="P11 Mats")
-axes.plot(tlist, np.real(P12exp), 'r', linewidth=2, label="P12 Mats")
-axes.plot(tlist, np.real(P11expT), 'b--', linewidth=2, label="P11 Mats + Term")
-axes.plot(tlist, np.real(P12expT), 'r--', linewidth=2, label="P12 Mats + Term")
-axes.plot(tlist, np.real(P11BR), 'g--', linewidth=2, label="P11 Bloch Redfield")
-axes.plot(tlist, np.real(P12BR), 'g--', linewidth=2, label="P12 Bloch Redfield")
-axes.set_xlabel(r't', fontsize=28)
-axes.legend(loc=0, fontsize=12)
+plot_result_expectations([
+    (resultMats, P11p, 'b', "P11 Mats"),
+    (resultMats, P12p, 'r', "P12 Mats"),
+    (resultMatsT, P11p, 'b--', "P11 Mats + Term"),
+    (resultMatsT, P12p, 'r--', "P12 Mats + Term"),
+    (resultBR, P11p, 'g--', "P11 Bloch Redfield"),
+    (resultBR, P12p, 'g--', "P12 Bloch Redfield"),
+]);
 ```
 
 ```{code-cell} ipython3
-# Plot the results
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-#axes.plot(tlist, np.real(P11exp)+ np.real(P22exp), 'b', linewidth=2, label="P11")
-axes.plot(tlist, np.real(P11exp), 'b', linewidth=2, label="P11 Mats")
-axes.plot(tlist, np.real(P12exp), 'r', linewidth=2, label="P12 Mats")
-#axes.plot(tlist, np.real(P11legacy), 'b--', linewidth=2, label="P11 Mats")
-#axes.plot(tlist, np.real(P12legacy), 'r--', linewidth=2, label="P12 Mats")
+# XXX: We should probably remove this at some point and make a separate notebook(s) for
+# generating plots for the paper.
 
-axes.set_xlabel(r't', fontsize=28)
+fig = plot_result_expectations([
+    (resultMats, P11p, 'b', "P11 Mats"),
+    (resultMats, P12p, 'r', "P12 Mats"),
+]);
 
-axes.legend(loc=0, fontsize=12)
 fig.savefig("figures/docsfig1.png")
 ```
 
@@ -494,51 +515,34 @@ ax1.plot(tlist_corr, real(corr_2k) - real(corr_15k),"r--", linewidth=3, label= r
 
 ax1.set_xlabel("t")
 ax1.set_ylabel(r"Error")
-ax1.legend()
+ax1.legend();
 ```
 
 ```{code-cell} ipython3
-#put pade parameters in lists for heom solver
+# put pade parameters in lists for heom solver
 ckAR = [real(eta) +0j for eta in etapLP]
 ckAI = [imag(etapLP[0]) + 0j]
 vkAR = [gam +0j for gam in gampLP]
 vkAI = [gampLP[0] + 0j]
-```
 
-```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
-HEOMPade = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+with timer("RHS construction time"):
+    HEOMPade = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 
-# Times to record state
-#tlist = np.linspace(0, 40, 600)
-
-resultPade = HEOMPade.run(rho0, tlist)
+with timer("ODE solver time"):
+    resultPade = HEOMPade.run(rho0, tlist)
 ```
 
 ```{code-cell} ipython3
-# Define some operators with which we will measure the system
-# 1,1 element of density matrix - corresonding to groundstate
-P11p=basis(2,0) * basis(2,0).dag()
-P22p=basis(2,1) * basis(2,1).dag()
-# 1,2 element of density matrix  - corresonding to coherence
-P12p=basis(2,0) * basis(2,1).dag()
-# Calculate expectation values in the bases
-P11expP = expect(resultPade.states, P11p)
-P22expP = expect(resultPade.states, P22p)
-P12expP = expect(resultPade.states, P12p)
-
-# Plot the results
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-#axes.plot(tlist, np.real(P11exp)+ np.real(P22exp), 'b', linewidth=2, label="P11")
-axes.plot(tlist, np.real(P11exp), 'b', linewidth=2, label="P11 mats")
-axes.plot(tlist, np.real(P11expT), 'y', linewidth=2, label="P11 mats T")
-axes.plot(tlist, np.real(P11expP), 'b--', linewidth=2, label="P11 pade")
-axes.plot(tlist, np.real(P12exp), 'r', linewidth=2, label="P12 mats")
-axes.plot(tlist, np.real(P12expT), 'g', linewidth=2, label="P12 mats T")
-axes.plot(tlist, np.real(P12expP), 'r--', linewidth=2, label="P12 pade")
-axes.set_xlabel(r't', fontsize=28)
-axes.legend(loc=0, fontsize=12)
+plot_result_expectations([
+    (resultMats, P11p, 'b', "P11 Mats"),
+    (resultMats, P12p, 'r', "P12 Mats"),
+    (resultMatsT, P11p, 'y', "P11 Mats + Term"),
+    (resultMatsT, P12p, 'g', "P12 Mats + Term"),
+    (resultPade, P11p, 'b--', "P11 Pade"),
+    (resultPade, P12p, 'r--', "P12 Pade"),
+]);
 ```
 
 ### Next we do fitting of correlation functions, and compare the Matsubara and Pade decompositions
@@ -604,7 +608,6 @@ def fitter(ans, tlist, k):
             params_0), tlist, ans, p0=guess, sigma=[0.01 for t in tlist2], bounds = param_bounds,maxfev = 1e8)
         popt.append(p1)
         pcov.append(p2)
-        print(f"Fitting step {i + 1} of {k} done.")
     return popt
 
 # function that evaluates values with fitted params at
@@ -616,7 +619,7 @@ def checker(tlist, vals):
         y.append(wrapper_fit_func(i, int(len(vals)/2), vals))
     return y
 
-#Number of exponents to use for real part
+# number of exponents to use for real part
 k = 4
 popt1 = fitter(corrRana, tlist2, k)
 corrRMats = np.real(dl_corr_approx(tlist2, Nk))
@@ -626,7 +629,7 @@ for i in range(k):
     plt.plot(tlist2, corrRana, tlist2, y, tlist2, corrRMats)    
     plt.show()
 
-#number of exponents for imaginary part
+# number of exponents for imaginary part
 k1 = 1
 popt2 = fitter(corrIana, tlist2, k1)
 for i in range(k1):
@@ -636,57 +639,52 @@ for i in range(k1):
 ```
 
 ```{code-cell} ipython3
+# Set the exponential coefficients from the fit parameters
+
 ckAR1 = list(popt1[k-1])[:len(list(popt1[k-1]))//2]
 ckAR = [x+0j for x in ckAR1]
-ckAI1 = list(popt2[k1-1])[:len(list(popt2[k1-1]))//2]
 
-ckAI = [x+0j for x in ckAI1]
-# vkAR, vkAI
 vkAR1 = list(popt1[k-1])[len(list(popt1[k-1]))//2:]
 vkAR = [-x+0j for x in vkAR1]
+
+ckAI1 = list(popt2[k1-1])[:len(list(popt2[k1-1]))//2]
+ckAI = [x+0j for x in ckAI1]
+
 vkAI1 = list(popt2[k1-1])[len(list(popt2[k1-1]))//2:]
 vkAI = [-x+0j for x in vkAI1]
 ```
 
 ```{code-cell} ipython3
-#overwrite imaginary fit with analytical value (not much reason to use the fit for this)
+# overwrite imaginary fit with analytical value (not much reason to use the fit for this)
 
 ckAI = [lam * gamma * (-1.0) + 0.j]
-
 vkAI = [gamma+0.j]
-
-print(ckAI)
-print(vkAI)
 ```
 
 ```{code-cell} ipython3
-NC = 8
+# The BDF ODE solver method here is faster because we have a slightly stiff problem
+# We set NC=8 because we are keeping more exponents
 
 options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method="bdf") 
-#BDF method here is faster because we have a slightly stiff problem
+NC = 8
 
-HEOMFit = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-```
-
-```{code-cell} ipython3
+with timer("RHS construction time"):
+    HEOMFit = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+    
 with timer("ODE solver time"):
     resultFit = HEOMFit.run(rho0, tlist)
 ```
 
 ```{code-cell} ipython3
-# Define some operators with which we will measure the system
-# 1,1 element of density matrix - corresonding to groundstate
-P11p = basis(2,0) * basis(2,0).dag()
-P22p = basis(2,1) * basis(2,1).dag()
-# 1,2 element of density matrix  - corresonding to coherence
-P12p = basis(2,0) * basis(2,1).dag()
-# Calculate expectation values in the bases
-P11expF = expect(resultFit.states, P11p)
-P22expF = expect(resultFit.states, P22p)
-P12expF = expect(resultFit.states, P12p)
+plot_result_expectations([
+    (resultFit, P11p, 'b', "P11 Fit"),
+    (resultFit, P12p, 'r', "P12 Fit"),
+]);
 ```
 
 ```{code-cell} ipython3
+# XXX: What is this cell for? Maybe we should plot something from it?
+
 print(Hsys.eigenstates())
 energies, states = Hsys.eigenstates()
 rhoss = (states[0]*states[0].dag()*exp(-beta*energies[0]) + states[1]*states[1].dag()*exp(-beta*energies[1]))
@@ -700,6 +698,8 @@ Here we construct a reaction coordinate inspired model to capture the steady-sta
 and compare to the HEOM prediction. This result is more accurate for narrow spectral densities.
 
 ```{code-cell} ipython3
+# XXX: What is this cell for? Maybe we should plot something from it?
+
 dot_energy, dot_state = Hsys.eigenstates()
 deltaE = dot_energy[1] - dot_energy[0]
 
@@ -742,6 +742,8 @@ P11RC = expect(rhoss,P11RC)
 ```
 
 ```{code-cell} ipython3
+# XXX: Decide what to do with this cell
+
 matplotlib.rcParams['figure.figsize'] = (7, 5)
 matplotlib.rcParams['axes.titlesize'] = 25
 matplotlib.rcParams['axes.labelsize'] = 30
@@ -758,56 +760,53 @@ matplotlib.rcParams['text.usetex']=False
 ```
 
 ```{code-cell} ipython3
-#matplotlib.rcParams.update({'font.size': 18, 'text.usetex': True})
-#matplotlib.rcParams.update({'font.size': 18, 'font.family': 'STIXGeneral', 'mathtext.fontset': 'stix','text.usetex': False})
+# XXX: Decide what to do with this cell
 
-# Plot the results
 fig, axes = plt.subplots(2, 1, sharex=False, figsize=(12,15))
+
 plt.sca(axes[0])
-plt.yticks([np.real(P11RC),0.6,1.0],[0.32,0.6,1])
+plt.yticks([np.real(P11RC), 0.6, 1.0], [0.32, 0.6, 1])
 
-axes[0].plot(tlist, np.real(P11BR), 'y-.', linewidth=2, label="Bloch-Redfield")
-axes[0].plot(tlist, np.real(P11exp), 'b', linewidth=2, label="Matsubara $N_k=2$")
-axes[0].plot(tlist, np.real(P11expT), 'g--', linewidth=3, label="Matsubara $N_k=2$ & Terminator")
-axes[0].plot(tlist, np.real(P11expF ), 'r', dashes=[3,2],linewidth=2, label=r"Fit $N_f = 4$, $N_k=15\times 10^3$")
+plot_result_expectations([
+    (resultBR, P11p, 'y-.', "Bloch-Redfield"),
+    (resultMats, P11p, 'b', "Matsubara $N_k=2$"),
+    (resultMatsT, P11p, 'g--', "Matsubara $N_k=2$ & Terminator", {"linewidth": 3}),
+    (resultFit, P11p, 'r', r"Fit $N_f = 4$, $N_k=15\times 10^3$", {"dashes": [3,2]}),
+], axes=axes[0])
 axes[0].plot(tlist, [np.real(P11RC) for t in tlist], 'black', ls='--',linewidth=2, label="Thermal")
-
-
 
 axes[0].locator_params(axis='y', nbins=4)
 axes[0].locator_params(axis='x', nbins=4)
 
-
-
 axes[0].set_ylabel(r"$\rho_{11}$", fontsize=30)
 axes[0].legend(loc=0)
 
-axes[0].text(5,0.9,"(a)",fontsize=30)
+axes[0].text(5, 0.9, "(a)", fontsize=30)
 axes[0].set_xlim(0,50)
 
-
 plt.sca(axes[1])
-plt.yticks([np.real(P12RC),-0.2,0.0,0.2],[-0.33,-0.2,0,0.2])
-axes[1].plot(tlist, np.real(P12BR), 'y-.', linewidth=2, label="Bloch Redfield")
-axes[1].plot(tlist, np.real(P12exp), 'b', linewidth=2, label="Matsubara $N_k=2$")
-axes[1].plot(tlist, np.real(P12expT), 'g--', linewidth=3, label="Matsubara $N_k=2$ & Terminator")
-axes[1].plot(tlist, np.real(P12expF ), 'r', dashes=[3,2], linewidth=2, label=r"Fit $N_f = 4$, $N_k=15\times 10^3$")
+plt.yticks([np.real(P12RC), -0.2, 0.0, 0.2], [-0.33, -0.2, 0, 0.2])
+
+plot_result_expectations([
+    (resultBR, P12p, 'y-.', "Bloch-Redfield"),
+    (resultMats, P12p, 'b', "Matsubara $N_k=2$"),
+    (resultMatsT, P12p, 'g--', "Matsubara $N_k=2$ & Terminator", {"linewidth": 3}),
+    (resultFit, P12p, 'r', r"Fit $N_f = 4$, $N_k=15\times 10^3$", {"dashes": [3,2]}),
+], axes=axes[1])
 axes[1].plot(tlist, [np.real(P12RC) for t in tlist], 'black', ls='--', linewidth=2, label="Thermal")
-
-
 
 axes[1].locator_params(axis='y', nbins=4)
 axes[1].locator_params(axis='x', nbins=4)
 
-axes[1].text(5,0.1,"(b)",fontsize=30)
-
+axes[1].text(5, 0.1, "(b)", fontsize=30)
 
 axes[1].set_xlabel(r'$t \Delta$', fontsize=30)
 axes[1].set_ylabel(r'$\rho_{01}$', fontsize=30)
 
 axes[1].set_xlim(0,50)
+
 fig.tight_layout()
-#fig.savefig("figures/fig1.pdf")
+# fig.savefig("figures/fig1.pdf")
 ```
 
 ```{code-cell} ipython3
