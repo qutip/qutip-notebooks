@@ -60,28 +60,106 @@ As an example, the Matsubara decomposition of the Drude-Lorentz spectral density
 
 Note that in the above, and the following, we set $\hbar = k_\mathrm{B} = 1$.
 
-
-
-Note that in the above, and the following, we set $\hbar = k_\mathrm{B} = 1$.
-
 ```{code-cell} ipython3
 %pylab inline
-from qutip import *
-```
-
-```{code-cell} ipython3
 %load_ext autoreload
 %autoreload 2
 ```
 
 ```{code-cell} ipython3
+import contextlib
+import time
+
+import numpy as np
+
+from qutip import *
 from qutip.nonmarkov.bofin import BosonicHEOMSolver
 from qutip.nonmarkov.bofin import HSolverDL
 ```
 
 ```{code-cell} ipython3
 def cot(x):
-    return 1./np.tan(x)
+    """ Vectorized cotangent of x. """
+    return 1. / np.tan(x)
+```
+
+```{code-cell} ipython3
+def dl_matsubara_params(lam, gamma, T, nk):
+    """ Calcualte the Matsubara coefficents and frequencies for the Drude-Lorenz
+        correlation function.
+
+        Paramters
+        ---------
+        nk : int
+            Number of coefficients to return.
+        lam, gamma, T : float
+            The parameters of the Drude-Lorenz model.
+
+        Returns
+        -------
+        ck, vk : float, float
+            The first nk co-efficients and frequencies of the expansion.
+    """
+    ck = []
+    vk = []
+    lam0 = lam
+    gam = gamma
+    hbar = 1
+    beta = 1.0/T
+
+    g = 2*np.pi / (beta)
+    for k in range(nk):
+        if k == 0:
+            vk.append(gam)
+            ck.append(lam0*gam*
+                (1.0/np.tan(gam*hbar*beta/2.0) - 1j) / hbar)
+        else:
+            g = 2*np.pi / (beta)
+            vk.append(k*g)
+            ck.append(4*lam0*gam*nu[k] /
+                  ((nu[k]**2 - gam**2)*beta*hbar**2))
+
+    return ck, vk
+```
+
+```{code-cell} ipython3
+def dl_matsubara_params_ri(lam, gamma, T, nk):
+    """ Calculation of the real and imaginary expansions of the Drude-Lorenz correlation functions.
+    """
+    ckAR = [lam * gamma * cot(gamma / (2 * T))]
+    ckAR.extend(
+        4 * lam * gamma * T *  2 * np.pi * k * T / ((2 * np.pi * k * T)**2 - gamma**2)
+        for k in range(1, nk + 1)
+    )
+    vkAR = [gamma]
+    vkAR.extend(2 * np.pi * k * T for k in range(1, nk + 1))
+
+    ckAI = [lam * gamma * (-1.0)]
+    vkAI = [gamma]
+    
+    return ckAR, vkAR, ckAI, vkAI
+```
+
+```{code-cell} ipython3
+def dl_corr_approx(t, nk):
+    """ Drude-Lorenz correlation function approximation.
+    
+        Approximates the correlation function at each time t to nk exponents.
+    """
+    c = lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t)
+    for k in range(1, nk):
+        vk = 2 * np.pi * k * T
+        c += (4 * lam * gamma * T * vk / (vk**2 - gamma**2))  * np.exp(-vk * t)
+    return c
+```
+
+```{code-cell} ipython3
+@contextlib.contextmanager
+def timer(label):
+    start = time.time()
+    yield
+    end = time.time()
+    print(f"{label}: {end - start}")
 ```
 
 ```{code-cell} ipython3
@@ -110,114 +188,52 @@ beta = 1./T
 
 #HEOM parameters
 NC = 5 # cut off parameter for the bath
-
 ```
 
 ```{code-cell} ipython3
-#Plot of spectral density
+def plot_spectral_density():
+    """ Plot the Drude-Lorentz spectral density """
+    w = np.linspace(0, 5, 1000)
+    J = w * 2 * lam * gamma / (gamma**2 + w**2)
 
-wlist = np.linspace(0, 5, 1000)
-pref = 1.
+    fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
+    axes.plot(w, J, 'r', linewidth=2)
+    axes.set_xlabel(r'$\omega$', fontsize=28)
+    axes.set_ylabel(r'J', fontsize=28)
 
-J = [w * 2 * lam * gamma / ((gamma**2 + w**2)) for w in wlist]
-
-# Plot the results
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-axes.plot(wlist, J, 'r', linewidth=2)
-axes.set_xlabel(r'$\omega$', fontsize=28)
-axes.set_ylabel(r'J', fontsize=28)
+plot_spectral_density()
 ```
 
 ```{code-cell} ipython3
-Nk = 2 # number of exponentials in approximation of the Matsubara approximation
-
-
-def _calc_matsubara_params():
-        """
-        Calculate the Matsubara coefficents and frequencies
-        Returns
-        -------
-        c, nu: both list(float)
-        """
-        c = []
-        nu = []
-        lam0 = lam
-        gam = gamma
-        hbar = 1
-        beta = 1.0/T
-        N_m =  Nk
-
-        g = 2*np.pi / (beta)
-        for k in range(N_m):
-            if k == 0:
-                nu.append(gam)
-                c.append(lam0*gam*
-                    (1.0/np.tan(gam*hbar*beta/2.0) - 1j) / hbar)
-            else:
-                g = 2*np.pi / (beta)
-                nu.append(k*g)
-                c.append(4*lam0*gam*nu[k] /
-                      ((nu[k]**2 - gam**2)*beta*hbar**2))
-
-    
-        return c, nu
-
-ctest,nutest=_calc_matsubara_params()
-
-
-
-ckAR = [ lam * gamma * (cot(gamma / (2 * T)))]
-ckAR.extend([(4 * lam * gamma * T *  2 * np.pi * k * T / (( 2 * np.pi * k * T)**2 - gamma**2)) for k in range(1,Nk+1)])
-
-vkAR = [gamma]
-vkAR.extend([2 * np.pi * k * T for k in range(1,Nk+1)])
-
-ckAI = [lam * gamma * (-1.0)]
-
-vkAI = [gamma]
-```
-
-```{code-cell} ipython3
-NR = len(ckAR)
-NI = len(ckAI)
-Q2 = [Q for kk in range(NR+NI)]
-# print(Q2)
+Nk = 2
+ckAR, vkAR, ckAI, vkAI = dl_matsubara_params_ri(nk=Nk, lam=lam, gamma=gamma, T=T)
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
-import time
-start = time.time()
-HEOMMats = BosonicHEOMSolver(Hsys, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-end = time.time()
-print("Construction time", end - start)
 
+with timer("Construction time"):
+    HEOMMats = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 
-start = time.time()
-resultMats = HEOMMats.run(rho0, tlist) #normal  115
-end = time.time()
-print("ODE solver time", end - start)
+with timer("ODE solver time"):
+    resultMats = HEOMMats.run(rho0, tlist) #normal  115
 ```
 
 ```{code-cell} ipython3
-#Compare to legacy class 
+# Compare to legacy class 
 
-start = time.time()
-HEOMlegacy = HSolverDL(Hsys, Q, lam, T, NC, Nk, gamma,options=options)
-end = time.time()
-print("Construction time", end - start)
+with timer("Construction time"):
+    HEOMlegacy = HSolverDL(Hsys, Q, lam, T, NC, Nk, gamma,options=options)
 
 
-start = time.time()
-resultlegacy = HEOMlegacy.run(rho0, tlist) #normal  115
-end = time.time()
-print("ODE solver time", end - start)
+with timer("ODE solver time"):
+    resultlegacy = HEOMlegacy.run(rho0, tlist) #normal  115
 ```
 
 ```{code-cell} ipython3
 # Define some operators with which we will measure the system
 # 1,1 element of density matrix - corresonding to groundstate
-P11p=basis(2,0) * basis(2,0).dag()
-P22p=basis(2,1) * basis(2,1).dag()
+P11p = basis(2,0) * basis(2,0).dag()
+P22p = basis(2,1) * basis(2,1).dag()
 # 1,2 element of density matrix  - corresonding to coherence
-P12p=basis(2,0) * basis(2,1).dag()
+P12p = basis(2,0) * basis(2,1).dag()
 # Calculate expectation values in the bases
 P11exp = expect(resultMats.states, P11p)
 P22exp = expect(resultMats.states, P22p)
@@ -242,43 +258,28 @@ since $\nu_k=\frac{2 \pi k}{\beta }$, if $1/\nu_k$ is much much smaller than oth
 It is convenient to calculate the whole sum $C(t)=\sum_{k=0}^{\infty} \frac{c_k}{\nu_k} =  2 \lambda / (\beta \gamma) - i\lambda $, and subtract off the contribution from the finite number of Matsubara terms that are kept in the hierarchy, and treat the residual as a Lindblad.
 
 ```{code-cell} ipython3
-#This is clearer if we plot the correlation function with a large number of matsubara terms:  the real part is 
-#slowly diverging at t=0
+def plot_correlation_expansion_divergence(): 
+    """ We plot the correlation function with a large number of Matsubara terms to show that
+        the real part is slowly diverging at t = 0.
+    """
+    t = linspace(0, 2, 100)
 
-lmaxmats = 2
-anamax = 15000
-tlist_corr=linspace(0,2,100)
+    # correlation coefficients with 15k and 2 terms
+    corr_15k = dl_corr_approx(t, 15_000)
+    corr_2 = dl_corr_approx(t, 2)
 
-def c(t,mats):
+    fig, ax1 = plt.subplots(figsize=(12, 7))
 
-    c_temp = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
-    for k in range(1, mats):
-        vk = 2 * np.pi * k * T
-        c_temp += ((pref * 4 * lam * gamma * T * vk / (vk**2 - gamma**2))  * np.exp(- vk * t) ) 
-        
+    ax1.plot(t, np.real(corr_2), color="b", linewidth=3, label= r"Mats = 2 real")
+    ax1.plot(t, np.imag(corr_2), color="r", linewidth=3, label= r"Mats = 2 imag")
+    ax1.plot(t, np.real(corr_15k), "b--", linewidth=3, label= r"Mats = 15000 real")
+    ax1.plot(t, np.imag(corr_15k), "r--", linewidth=3, label= r"Mats = 15000 imag")
+
+    ax1.set_xlabel("t")
+    ax1.set_ylabel(r"$C$")
+    ax1.legend()
     
-    return c_temp
-
-# Reals parts
-corrRana = [np.real(c(t,anamax)) for t in tlist_corr]
-# Imaginary parts
-corrIana = [np.imag((pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))) for t in tlist_corr]
-
-
-
-cppL = c( tlist_corr,lmaxmats)
-
-fig, ax1 = plt.subplots(figsize=(12, 7))
-#print(gam_list)
-ax1.plot( tlist_corr,real(cppL), color="b", linewidth=3, label= r"Mats = 2 real")
-ax1.plot( tlist_corr,imag(cppL), color="r", linewidth=3, label= r"Mats = 2 imag")
-ax1.plot( tlist_corr,corrRana, "b--", linewidth=3, label= r"Mats = 15000 real")
-ax1.plot( tlist_corr,corrIana, "r--", linewidth=3, label= r"Mats = 15000 imag")
-
-
-ax1.set_xlabel("t")
-ax1.set_ylabel(r"$C$")
-ax1.legend()
+plot_correlation_expansion_divergence()
 ```
 
 ```{code-cell} ipython3
@@ -292,23 +293,16 @@ approx_factr -=  lam * gamma * (-1.0j + cot(gamma / (2 * T)))/gamma
 for k in range(1,Nk+1):
     vk = 2 * np.pi * k * T
     
-    approx_factr -= ((pref * 4 * lam * gamma * T * vk / (vk**2 - gamma**2))/ vk)
+    approx_factr -= ((4 * lam * gamma * T * vk / (vk**2 - gamma**2))/ vk)
   
 L_bnd = -approx_factr*op
 
 Ltot = -1.0j*(spre(Hsys)-spost(Hsys)) + L_bnd
 Ltot = liouvillian(Hsys) + L_bnd
 
-NR = len(ckAR)
-NI = len(ckAI)
-Q2 = [Q for kk in range(NR+NI)]
-
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
-HEOMMatsT = BosonicHEOMSolver(Ltot, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-# Initial state of the system.
-rho0 = basis(2,0) * basis(2,0).dag()   
-
+HEOMMatsT = BosonicHEOMSolver(Ltot, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 
 resultMatsT = HEOMMatsT.run(rho0, tlist)
 ```
@@ -371,20 +365,13 @@ fig.savefig("figures/docsfig1.png")
 ```{code-cell} ipython3
 #We can compare the Matsubara result to the faster-converging Pade decomposition
 
-
 lmax = 2
-
-
-
 
 def deltafun(j,k):
     if j==k: 
         return 1.
     else:
         return 0.
-
-
-
 
 Alpha =np.zeros((2*lmax,2*lmax))
 for j in range(2*lmax):
@@ -409,12 +396,10 @@ for j in range(2*lmax-1):
         
 eigvalsAP=eigvalsh(AlphaP)    
 
-
 chi = []
 for val in  eigvalsAP[0:lmax-1]:
     
     chi.append(-2/val)
-
     
 eta_list = []
 prefactor = 0.5*lmax*(2*(lmax + 1) + 1)
@@ -430,11 +415,8 @@ for j in range(lmax):
         
     eta_list.append(term)
 
-
 kappa = [0]+eta_list
 epsilon = [0]+eps
-
-
 
 beta = 1/T
 
@@ -469,34 +451,26 @@ def C(tlist):
     return c_tot, eta_list, gamma_list
 
 
-cppLP,etapLP,gampLP = C( tlist_corr)
-
+tlist_corr = linspace(0, 2, 100)
+cppLP, etapLP, gampLP = C(tlist_corr)
+corr_15k = dl_corr_approx(tlist_corr, 15_000)
+corr_2k = dl_corr_approx(tlist_corr, 2)
 
 fig, ax1 = plt.subplots(figsize=(12, 7))
-#print(gam_list)
-ax1.plot( tlist_corr,real(cppLP), color="b", linewidth=3, label= r"real pade 2 terms")
-#ax1.plot(tlist,imag(cppL), color="r", linewidth=3, label= r"imag alt")
-ax1.plot( tlist_corr,corrRana, "r--", linewidth=3, label= r"real mats 15000 terms")
-ax1.plot( tlist_corr,real(cppL), "g--", linewidth=3, label= r"real mats 2 terms")
-#ax1.plot(tlist,corrIana, "r--", linewidth=3, label= r"imag ana")
-
-
+ax1.plot(tlist_corr, real(cppLP), color="b", linewidth=3, label= r"real pade 2 terms")
+ax1.plot(tlist_corr, real(corr_15k), "r--", linewidth=3, label= r"real mats 15000 terms")
+#ax1.plot(tlist_corr, imag(corr_15k), "r--", linewidth=3, label= r"imag mats 15000 terms")
+ax1.plot( tlist_corr,real(corr_2k), "g--", linewidth=3, label= r"real mats 2 terms")
+#ax1.plot(tlist_corr, imag(cppL), color="r", linewidth=3, label= r"imag mats 2 terms")
 
 ax1.set_xlabel("t")
 ax1.set_ylabel(r"$C$")
 ax1.legend()
 
-
 fig, ax1 = plt.subplots(figsize=(12, 7))
-#print(gam_list)
-#ax1.plot(tlist,real(cppL), color="b", linewidth=3, label= r"real alt")
-#ax1.plot(tlist,imag(cppL), color="r", linewidth=3, label= r"imag alt")
-#ax1.plot(tlist,corrRana, "b--", linewidth=3, label= r"real ana")
-#ax1.plot(tlist,corrIana, "r--", linewidth=3, label= r"imag ana")
 
-ax1.plot( tlist_corr,real(cppLP)-corrRana, color="b", linewidth=3, label= r"pade error")
-ax1.plot( tlist_corr,real(cppL)-corrRana,"r--", linewidth=3, label= r"mats error")
-#ax1.plot(tlist,real(cppL)-corrRana, color="b", linewidth=3, label= r"mats error")
+ax1.plot(tlist_corr, real(cppLP) - real(corr_15k), color="b", linewidth=3, label= r"pade error")
+ax1.plot(tlist_corr, real(corr_2k) - real(corr_15k),"r--", linewidth=3, label= r"mats error")
 
 ax1.set_xlabel("t")
 ax1.set_ylabel(r"Error")
@@ -512,16 +486,10 @@ vkAI = [gampLP[0] + 0j]
 ```
 
 ```{code-cell} ipython3
-NR = len(ckAR)
-NI = len(ckAI)
-Q2 = [Q for kk in range(NR+NI)]
-print(Q2)
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
-HEOMPade = BosonicHEOMSolver(Hsys, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+HEOMPade = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 
-# Initial state of the system.
-rho0 = basis(2,0) * basis(2,0).dag()   
 # Times to record state
 #tlist = np.linspace(0, 40, 600)
 
@@ -556,22 +524,12 @@ axes.legend(loc=0, fontsize=12)
 ### Next we do fitting of correlation, and compare to Mats and Pade.  We collect again a large sum of matsubara terms for many time steps
 
 ```{code-cell} ipython3
-def c_R(t, anamax):
-    c = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
-    for k in range(1, anamax):
-        vk = 2 * np.pi * k * T
-        c += ((pref * 4 * lam * gamma * T * vk / (vk**2 - gamma**2))  * np.exp(- vk * t) )
-    return c
+tlist2 = np.linspace(0, 2, 10000)
 
-def c_I(t):
-    c = (pref * lam * gamma * (-1.0j + cot(gamma / (2 * T))) * np.exp(-gamma * t))
-    return c
+corr_15k_t10k = dl_corr_approx(tlist2, 15_000)
 
-lmaxmats = 15000
-tlist2 = linspace(0,2,10000)
-
-corrRana = np.real(c_R(tlist2, lmaxmats))
-corrIana = np.imag(c_I(tlist2))
+corrRana = np.real(corr_15k_t10k)
+corrIana = np.imag(corr_15k_t10k)
 ```
 
 ```{code-cell} ipython3
@@ -580,14 +538,12 @@ corrIana = np.imag(c_I(tlist2))
 from scipy.optimize import curve_fit
 def wrapper_fit_func(x, N, *args):
     a, b = list(args[0][:N]), list(args[0][N:2*N])
-    # print("debug")
     return fit_func(x, a, b, N)
 
 # actual fitting function
 def fit_func(x, a, b, N):
     tot = 0
     for i in range(N):
-        # print(i)
         tot += a[i]*np.exp(b[i]*x)
     return tot
 
@@ -623,9 +579,8 @@ def fitter(ans, tlist, k):
             params_0), tlist, ans, p0=guess, sigma=[0.01 for t in tlist2], bounds = param_bounds,maxfev = 1e8)
         popt.append(p1)
         pcov.append(p2)
-        print(i+1)
+        print(f"Fitting step {i + 1} of {k} done.")
     return popt
-# print(popt)
 
 # function that evaluates values with fitted params at
 # given inputs
@@ -639,14 +594,11 @@ def checker(tlist, vals):
 #Number of exponents to use for real part
 k = 4
 popt1 = fitter(corrRana, tlist2, k)
-
-
-corrRMats = [np.real(c(t,Nk)) for t in tlist2]
+corrRMats = np.real(dl_corr_approx(tlist2, Nk))
 
 for i in range(k):
     y = checker(tlist2, popt1[i])
-    plt.plot(tlist2, corrRana, tlist2, y, tlist2, corrRMats)
-    
+    plt.plot(tlist2, corrRana, tlist2, y, tlist2, corrRMats)    
     plt.show()
 
 #number of exponents for imaginary part
@@ -674,7 +626,7 @@ vkAI = [-x+0j for x in vkAI1]
 ```{code-cell} ipython3
 #overwrite imaginary fit with analytical value (not much reason to use the fit for this)
 
-ckAI = [pref * lam * gamma * (-1.0) + 0.j]
+ckAI = [lam * gamma * (-1.0) + 0.j]
 
 vkAI = [gamma+0.j]
 
@@ -685,34 +637,24 @@ print(vkAI)
 ```{code-cell} ipython3
 NC = 8
 
-NR = len(ckAR)
-NI = len(ckAI)
-Q2 = [Q for kk in range(NR+NI)]
-print(Q2)
 options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method="bdf") 
 #BDF because we have a slightly stiff problem
 
-HEOMFit = BosonicHEOMSolver(Hsys, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+HEOMFit = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
 ```
 
 ```{code-cell} ipython3
-
-
-
-start = time.time()
-resultFit = HEOMFit.run(rho0, tlist)
-
-end = time.time()
-print("ODE solver time", end - start)
+with timer("ODE solver time"):
+    resultFit = HEOMFit.run(rho0, tlist)
 ```
 
 ```{code-cell} ipython3
 # Define some operators with which we will measure the system
 # 1,1 element of density matrix - corresonding to groundstate
-P11p=basis(2,0) * basis(2,0).dag()
-P22p=basis(2,1) * basis(2,1).dag()
+P11p = basis(2,0) * basis(2,0).dag()
+P22p = basis(2,1) * basis(2,1).dag()
 # 1,2 element of density matrix  - corresonding to coherence
-P12p=basis(2,0) * basis(2,1).dag()
+P12p = basis(2,0) * basis(2,1).dag()
 # Calculate expectation values in the bases
 P11expF = expect(resultFit.states, P11p)
 P22expF = expect(resultFit.states, P22p)
