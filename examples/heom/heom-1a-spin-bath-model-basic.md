@@ -218,12 +218,11 @@ exponent.This is clearly the case for the first term in the vkAI and vkAR lists.
 ckAR, vkAR, ckAI, vkAI = dl_matsubara_params(nk=Nk, lam=lam, gamma=gamma, T=T)
 ```
 
-Having created the lists which specify the bath correlation functions, we pass them to the `BosonicHEOMSolver`
-class.
+Having created the lists which specify the bath correlation functions, we create a `BosonicBath` from them and pass the bath to the `HEOMSolver` class.
 
-The class constructs the "right hand side" (RHS) determinining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
+The solver constructs the "right hand side" (RHS) determinining how the system and auxiliary density operators evolve in time. This can then be used to solve for dynamics or steady-state.
 
-Below we create the solver and the solve for the dynamics by calling `.run(rho0, tlist)`.
+Below we create the bath and solver and then solve for the dynamics by calling `.run(rho0, tlist)`.
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
