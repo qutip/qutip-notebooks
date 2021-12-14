@@ -73,7 +73,7 @@ import time
 import numpy as np
 
 from qutip import *
-from qutip.nonmarkov.heom import HEOMSolver, HSolverDL, BosonicBath
+from qutip.nonmarkov.heom import HEOMSolver, HSolverDL, BosonicBath, DrudeLorentzBath, DrudeLorentzPadeBath
 ```
 
 ```{code-cell} ipython3
@@ -242,10 +242,32 @@ plot_result_expectations([
 ]);
 ```
 
+In practice, one would not perform this laborious expansion for the Drude-Lorentz correlation function, because QuTiP already has a class, `DrudeLorentzBath`, that can construct this bath for you. Nevertheless, knowing how to perform this expansion will allow you to construct your own baths for other spectral densities.
+
+Below we show how to use this built-in functionality:
+
+```{code-cell} ipython3
+# Compare to built-in Drude-Lorentz bath:
+
+with timer("RHS construction time"):
+    bath = DrudeLorentzBath(Q, lam=lam, gamma=gamma, T=T, Nk=Nk)
+    HEOM_dlbath = HEOMSolver(Hsys, bath, NC, options=options)
+
+with timer("ODE solver time"):
+    result_dlbath = HEOM_dlbath.run(rho0, tlist) #normal  115
+```
+
+```{code-cell} ipython3
+plot_result_expectations([
+    (result_dlbath, P11p, 'b', "P11 (DrudeLorentzBath)"),
+    (result_dlbath, P12p, 'r', "P12 (DrudeLorentzBath)"),
+]);
+```
+
 We also provide a legacy class, `HSolverDL`, which calculates the Drude-Lorentz correlation functions automatically, to be backwards compatible with the previous HEOM solver in QuTiP:
 
 ```{code-cell} ipython3
-# Compare to legacy class
+# Compare to legacy class:
 
 # The legacy class performs the above collation of co-oefficients automatically, based upon the
 # parameters for the Drude-Lorentz spectral density.
@@ -304,13 +326,18 @@ def plot_correlation_expansion_divergence():
 plot_correlation_expansion_divergence()
 ```
 
-Lets evaluate the result including this Ishizaki-Tanimura terminator:
+Let us evaluate the result including this Ishizaki-Tanimura terminator:
 
 ```{code-cell} ipython3
 # Run HEOM solver and include the Ishizaki-Tanimura terminator
 
-# Note that in the legacy HSolverDL function the terminator is included automatically if
-# the parameter bnd_cut_approx=True is used.
+# Notes:
+#
+# * when using the built-in DrudeLorentzBath, the terminator (L_bnd) is available
+#   from bath.terminator().
+#
+# * in the legacy HSolverDL function the terminator is included automatically if
+#   the parameter bnd_cut_approx=True is used.
 
 op = -2*spre(Q)*spost(Q.dag()) + spre(Q.dag()*Q) + spost(Q.dag()*Q)
 
@@ -341,6 +368,28 @@ with timer("ODE solver time"):
 plot_result_expectations([
     (resultMatsT, P11p, 'b', "P11 Mats + Term"),
     (resultMatsT, P12p, 'r', "P12 Mats + Term"),
+]);
+```
+
+Or using the built-in Drude-Lorentz bath we can write simply:
+
+```{code-cell} ipython3
+options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
+
+with timer("RHS construction time"):
+    bath = DrudeLorentzBath(Q, lam=lam, gamma=gamma, T=T, Nk=Nk)
+    _, terminator = bath.terminator()
+    Ltot = liouvillian(Hsys) + terminator
+    HEOM_dlbath_T = HEOMSolver(Ltot, bath, NC, options=options)
+
+with timer("ODE solver time"):
+    result_dlbath_T = HEOM_dlbath_T.run(rho0, tlist)
+```
+
+```{code-cell} ipython3
+plot_result_expectations([
+    (result_dlbath_T, P11p, 'b', "P11 Mats (DrudeLorentzBath + Term)"),
+    (result_dlbath_T, P12p, 'r', "P12 Mats (DrudeLorentzBath + Term)"),
 ]);
 ```
 
@@ -379,6 +428,10 @@ fig = plot_result_expectations([
 
 fig.savefig("figures/docsfig1.png")
 ```
+
+# Padé decomposition
+
++++
 
 The Matsubara decomposition is not the only option.  We can also use the faster-converging Pade decomposition.
 
@@ -504,6 +557,30 @@ plot_result_expectations([
     (resultMatsT, P12p, 'g', "P12 Mats + Term"),
     (resultPade, P11p, 'b--', "P11 Pade"),
     (resultPade, P12p, 'r--', "P12 Pade"),
+]);
+```
+
+The Padé decomposition of the Drude-Lorentz bath is also available via a built-in class, `DrudeLorentzPadeBath` bath. Like `DrudeLorentzBath`, the one can obtain the terminator by calling `bath.terminator()`.
+
+Below we show how to use the built-in Padé Drude-Lorentz bath and its terminator (although the termintor does not provide much improvement here, because the Padé expansion already fits the correlation function well):
+
+```{code-cell} ipython3
+options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
+
+with timer("RHS construction time"):
+    bath = DrudeLorentzPadeBath(Q, lam=lam, gamma=gamma, T=T, Nk=Nk)
+    _, terminator = bath.terminator()
+    Ltot = liouvillian(Hsys) + terminator
+    HEOM_dlpbath_T = HEOMSolver(Ltot, bath, NC, options=options)
+
+with timer("ODE solver time"):
+    result_dlpbath_T = HEOM_dlpbath_T.run(rho0, tlist)
+```
+
+```{code-cell} ipython3
+plot_result_expectations([
+    (result_dlpbath_T, P11p, 'b', "P11 Padé (DrudeLorentzBath + Term)"),
+    (result_dlpbath_T, P12p, 'r', "P12 Padé (DrudeLorentzBath + Term)"),
 ]);
 ```
 
