@@ -84,45 +84,6 @@ def cot(x):
 
 ```{code-cell} ipython3
 def dl_matsubara_params(lam, gamma, T, nk):
-    """ Calcualte the Matsubara coefficents and frequencies for the Drude-Lorenz
-        correlation function.
-
-        Paramters
-        ---------
-        nk : int
-            Number of coefficients to return.
-        lam, gamma, T : float
-            The parameters of the Drude-Lorenz model.
-
-        Returns
-        -------
-        ck, vk : float, float
-            The first nk co-efficients and frequencies of the expansion.
-    """
-    ck = []
-    vk = []
-    lam0 = lam
-    gam = gamma
-    hbar = 1
-    beta = 1.0/T
-
-    g = 2*np.pi / (beta)
-    for k in range(nk):
-        if k == 0:
-            vk.append(gam)
-            ck.append(lam0*gam*
-                (1.0/np.tan(gam*hbar*beta/2.0) - 1j) / hbar)
-        else:
-            g = 2*np.pi / (beta)
-            vk.append(k*g)
-            ck.append(4*lam0*gam*nu[k] /
-                  ((nu[k]**2 - gam**2)*beta*hbar**2))
-
-    return ck, vk
-```
-
-```{code-cell} ipython3
-def dl_matsubara_params_ri(lam, gamma, T, nk):
     """ Calculation of the real and imaginary expansions of the Drude-Lorenz correlation functions.
     """
     ckAR = [lam * gamma * cot(gamma / (2 * T))]
@@ -254,7 +215,7 @@ The HEOM code will optimize these, and reduce the number of exponents when real 
 exponent.This is clearly the case for the first term in the vkAI and vkAR lists.
 
 ```{code-cell} ipython3
-ckAR, vkAR, ckAI, vkAI = dl_matsubara_params_ri(nk=Nk, lam=lam, gamma=gamma, T=T)
+ckAR, vkAR, ckAI, vkAI = dl_matsubara_params(nk=Nk, lam=lam, gamma=gamma, T=T)
 ```
 
 Having created the lists which specify the bath correlation functions, we pass them to the `BosonicHEOMSolver`
