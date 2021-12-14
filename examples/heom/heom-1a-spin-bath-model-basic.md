@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.0
+    jupytext_version: 1.13.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -73,8 +73,7 @@ import time
 import numpy as np
 
 from qutip import *
-from qutip.nonmarkov.bofin import BosonicHEOMSolver
-from qutip.nonmarkov.bofin import HSolverDL
+from qutip.nonmarkov.heom import HEOMSolver, HSolverDL, BosonicBath
 ```
 
 ```{code-cell} ipython3
@@ -269,7 +268,8 @@ Below we create the solver and the solve for the dynamics by calling `.run(rho0,
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
 with timer("RHS construction time"):
-    HEOMMats = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOMMats = HEOMSolver(Hsys, bath, NC, options=options)
     
 with timer("ODE solver time"):
     resultMats = HEOMMats.run(rho0, tlist)
@@ -370,7 +370,8 @@ Ltot = liouvillian(Hsys) + L_bnd
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
 with timer("RHS construction time"):
-    HEOMMatsT = BosonicHEOMSolver(Ltot, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOMMatsT = HEOMSolver(Ltot, bath, NC, options=options)
 
 with timer("ODE solver time"):
     resultMatsT = HEOMMatsT.run(rho0, tlist)
@@ -528,7 +529,8 @@ vkAI = [gampLP[0] + 0j]
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 
 with timer("RHS construction time"):
-    HEOMPade = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOMPade = HEOMSolver(Hsys, bath, NC, options=options)
 
 with timer("ODE solver time"):
     resultPade = HEOMPade.run(rho0, tlist)
@@ -669,7 +671,8 @@ options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method
 NC = 8
 
 with timer("RHS construction time"):
-    HEOMFit = BosonicHEOMSolver(Hsys, Q, ckAR, ckAI, vkAR, vkAI, NC, options=options)
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOMFit = HEOMSolver(Hsys, bath, NC, options=options)
     
 with timer("ODE solver time"):
     resultFit = HEOMFit.run(rho0, tlist)
