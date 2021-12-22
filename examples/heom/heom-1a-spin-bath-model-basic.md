@@ -722,23 +722,10 @@ plot_result_expectations([
 ]);
 ```
 
-```{code-cell} ipython3
-# XXX: What is this cell for? Maybe we should plot something from it?
-
-print(Hsys.eigenstates())
-energies, states = Hsys.eigenstates()
-rhoss = (states[0]*states[0].dag()*exp(-beta*energies[0]) + states[1]*states[1].dag()*exp(-beta*energies[1]))
-rhoss = rhoss/rhoss.norm()
-
-P12 = expect(rhoss,P12p)
-P11 = expect(rhoss,P11p)
-```
-
 Here we construct a reaction coordinate inspired model to capture the steady-state behavior,
-and compare to the HEOM prediction. This result is more accurate for narrow spectral densities.
+and compare to the HEOM prediction. This result is more accurate for narrow spectral densities.  Both the population and coherence from this cell are used in the final plot below.
 
 ```{code-cell} ipython3
-# XXX: What is this cell for? Maybe we should plot something from it?
 
 dot_energy, dot_state = Hsys.eigenstates()
 deltaE = dot_energy[1] - dot_energy[0]
@@ -846,7 +833,7 @@ axes[1].set_ylabel(r'$\rho_{01}$', fontsize=30)
 axes[1].set_xlim(0,50)
 
 fig.tight_layout()
-# fig.savefig("figures/fig1.pdf")
+#fig.savefig("fig1.pdf")
 ```
 
 ```{code-cell} ipython3
