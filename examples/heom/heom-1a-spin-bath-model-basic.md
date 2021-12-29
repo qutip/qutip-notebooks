@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.4
+    jupytext_version: 1.13.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -24,7 +24,7 @@ In this example we show the evolution of a single two-level system in contact wi
 
 The Bosonic environment is implicitly assumed to obey a particular Hamiltonian (see paper), the parameters of which are encoded in the spectral density, and subsequently the free-bath correlation functions.
 
-In the example below we show how to model the overdamped Drude-Lorentz Spectral Density, commonly used with the HEOM. We show how to do this the Matsubara, Pade and fitting decompositions, and compare their convergence.  
+In the example below we show how to model the overdamped Drude-Lorentz Spectral Density, commonly used with the HEOM. We show how to do this using the Matsubara, Pade and fitting decompositions, and compare their convergence.  
 
 ### Drude-Lorentz (overdamped) spectral density
 The Drude-Lorentz spectral density is:
@@ -726,7 +726,6 @@ Here we construct a reaction coordinate inspired model to capture the steady-sta
 and compare to the HEOM prediction. This result is more accurate for narrow spectral densities.  Both the population and coherence from this cell are used in the final plot below.
 
 ```{code-cell} ipython3
-
 dot_energy, dot_state = Hsys.eigenstates()
 deltaE = dot_energy[1] - dot_energy[0]
 
