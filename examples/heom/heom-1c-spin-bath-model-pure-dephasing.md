@@ -175,7 +175,7 @@ psi = (basis(2, 0) + basis(2, 1)) / np.sqrt(2.)
 rho0 = psi * psi.dag()
 ```
 
-#### Simulation 1: DrudeLorentzBath, not using Ishizaki-Tanimura terminator
+#### Simulation 1: Matsubara decomposition, not using Ishizaki-Tanimura terminator
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
@@ -188,7 +188,7 @@ with timer("ODE solver time"):
     resultMats = HEOMMats.run(rho0, tlist)
 ```
 
-#### Simulation 2: DrudeLorentzBath (including terminator)
+#### Simulation 2: Matsubara decomposition (including terminator)
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
@@ -215,7 +215,7 @@ plot_result_expectations([
 
 As in example 1a, we can compare to Pade and Fitting approaches.
 
-#### Simulation 3: DrudeLorentzPadeBath
+#### Simulation 3: Pade decomposition
 
 ```{code-cell} ipython3
 options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
@@ -301,7 +301,7 @@ def fitter(ans, tlist, k):
         b_higher.extend(bhigher)
         param_bounds = (b_lower, b_higher)
         p1, p2 = curve_fit(lambda x, *params_0: wrapper_fit_func(x, i+1, \
-            params_0), tlist, ans, p0=guess, sigma=[0.01 for t in tlist2], bounds = param_bounds,maxfev = 1e8)
+            params_0), tlist, ans, p0=guess, sigma=[0.01 for t in tlist], bounds = param_bounds,maxfev = 1e8)
         popt.append(p1)
         pcov.append(p2)
     return popt
@@ -349,8 +349,8 @@ vkAI = [complex(-x) for x in vkAI1]
 ```{code-cell} ipython3
 # Overwrite imaginary fit with analytical value just in case
 
-ckAI = [lam * gamma * (-1.0j)]
-vkAI = [gamma + 0.j]
+ckAI = [complex(lam * gamma * (-1.0))]
+vkAI = [complex(gamma)]
 ```
 
 ```{code-cell} ipython3
