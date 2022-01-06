@@ -212,7 +212,7 @@ plot_spectral_density()
 Next we calculate the exponents using the Matsubara decompositions. Here we split them into real and imaginary parts.
 
 The HEOM code will optimize these, and reduce the number of exponents when real and imaginary parts have the same
-exponent.This is clearly the case for the first term in the vkAI and vkAR lists.
+exponent. This is clearly the case for the first term in the vkAI and vkAR lists.
 
 ```{code-cell} ipython3
 ckAR, vkAR, ckAI, vkAI = dl_matsubara_params(nk=Nk, lam=lam, gamma=gamma, T=T)
