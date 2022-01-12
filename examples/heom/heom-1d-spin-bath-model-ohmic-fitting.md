@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.4
+    jupytext_version: 1.13.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -24,54 +24,91 @@ In this example we show the evolution of a single two-level system in contact wi
 
 The Bosonic environment is implicitly assumed to obey a particular Hamiltonian (see paper), the parameters of which are encoded in the spectral density, and subsequently the free-bath correlation functions.
 
-In the example below we show how model an Ohmic environment with exponential cut-off in two ways. First we fit the spectrum with a set of underdamped brownian oscillator functions. Second, we evaluate the correlation functions, and fit those with a certain choice of exponential functions.  
-
+In the example below we show how model an Ohmic environment with exponential cut-off in two ways. First we fit the spectrum with a set of underdamped brownian oscillator functions. Second, we evaluate the correlation functions, and fit those with a certain choice of exponential functions.
 
 ```{code-cell} ipython3
-%pylab inline
+%pylab inlinex
 ```
 
 ```{code-cell} ipython3
+import contextlib
+import time
+
+import numpy as np
+
+from scipy.optimize import curve_fit
+
 from qutip import *
-```
+from qutip.nonmarkov.heom import HEOMSolver, BosonicBath
 
-```{code-cell} ipython3
-%load_ext autoreload
-%autoreload 2
-```
+# Import mpmath functions for evaluation of correlation functions:
 
-```{code-cell} ipython3
+from mpmath import mp
+from mpmath import zeta
+from mpmath import gamma
 
-from bofin.heom import BosonicHEOMSolver
+mp.dps = 15
+mp.pretty = True
 ```
 
 ```{code-cell} ipython3
 def cot(x):
-    return 1./np.tan(x)
+    """ Vectorized cotangent of x. """
+    return 1. / np.tan(x)
+```
 
-
+```{code-cell} ipython3
 def coth(x):
-    """
-    Calculates the coth function.
+    """ Vectorized hyperbolic cotangent of x. """
+    return 1. / np.tanh(x)
+```
+
+```{code-cell} ipython3
+def plot_result_expectations(plots, axes=None):
+    """ Plot the expectation values of operators as functions of time.
     
-    Parameters
-    ----------
-    x: np.ndarray
-        Any numpy array or list like input.
-        
-    Returns
-    -------
-    cothx: ndarray
-        The coth function applied to the input.
+        Each plot in plots consists of (solver_result, measurement_operation, color, label).
     """
-    return 1/np.tanh(x)
+    if axes is None:
+        fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
+        fig_created = True
+    else:
+        fig = None
+        fig_created = False
+
+    # add kw arguments to each plot if missing
+    plots = [p if len(p) == 5 else p + ({},) for p in plots]
+    for result, m_op, color, label, kw in plots:
+        exp = np.real(expect(result.states, m_op))
+        kw.setdefault("linewidth", 2)
+        axes.plot(result.times, exp, color, label=label, **kw)
+
+    if fig_created:
+        axes.legend(loc=0, fontsize=12)
+        axes.set_xlabel("t", fontsize=28)
+
+    return fig
+```
+
+```{code-cell} ipython3
+@contextlib.contextmanager
+def timer(label):
+    """ Simple utility for timing functions:
+    
+        with timer("name"):
+            ... code to time ...
+    """
+    start = time.time()
+    yield
+    end = time.time()
+    print(f"{label}: {end - start}")
 ```
 
 ```{code-cell} ipython3
 # Defining the system Hamiltonian
 eps = .0    # Energy of the 2-level system.
 Del = .2    # Tunnelling term
-Hsys = 0.5 * eps * sigmaz() + 0.5 * Del* sigmax()
+Hsys = 0.5 * eps * sigmaz() + 0.5 * Del * sigmax()
 ```
 
 ```{code-cell} ipython3
@@ -79,29 +116,191 @@ Hsys = 0.5 * eps * sigmaz() + 0.5 * Del* sigmax()
 rho0 = basis(2,0) * basis(2,0).dag()  
 ```
 
+### Constructing the Ohmic bath correlation functions from the analytic expression
+
++++
+
+We first construct the correlation functions by directly coding the analytical expression (see, e.g., http://www1.itp.tu-berlin.de/brandes/public_html/publications/notes.pdf for a derivation, equation 7.59):
+
+\begin{align}
+C(t) =& \: 2 \alpha \omega_{c}^{1 - s} \beta^{- (s + 1)} \: \times \\
+      & \: \Gamma(s + 1) \left[ \zeta \left(s + 1, \frac{1 + \beta \omega_c - i \omega_c t}{\beta \omega_c}\right) + \zeta \left(s + 1, \frac{1 + i \omega_c t}{\beta \omega_c}\right) \right]
+\end{align}
+
+where $\Gamma$ is the Gamma function and
+
+\begin{equation}
+\zeta(z, u) \equiv \sum_{n=0}^{\infty} \frac{1}{(n + u)^z}, \; u \neq 0, -1, -2, \ldots
+\end{equation}
+
+is the generalized Zeta function. The Ohmic case is given by $s = 1$.
+
 ```{code-cell} ipython3
-#Import mpmath functions for evaluation of correlation functions
-
-from mpmath import mp
-from mpmath import zeta
-from mpmath import gamma
-
-mp.dps = 15; mp.pretty = True
+# Zero temperature limit:
+#
+# \begin{equation}
+# C(t) = 2 \alpha \omega_{c}^{s + 1} \Gamma(s + 1) (1 + i \omega_{c} t)^{-(s + 1)}
+# \end{equation}
+#
+# where $\Gamma$ is the Gamma function and $s = 1$ gives the Ohmic case.
 ```
 
-We first construct the correlation functions from the analytical expression (see, e.g., http://www1.itp.tu-berlin.de/brandes/public_html/publications/notes.pdf for a derivation, equation 7.61)
+```{code-cell} ipython3
+def corr_ohmic(t, alpha, wc, beta, s=1):
+    """ The Ohmic bath correlation function as a function of t (and the bath parameters). """
+    # original code had (1/pi) instead of 2 as the prefactor; why?
+    corr = 2 * alpha * wc**(1 - s) * beta**(-(s + 1)) * gamma(s + 1)
+    z1_u = (1 + beta * wc - 1.0j * wc * t) / (beta * wc)
+    z2_u = (1 + 1.0j * wc * t) / (beta * wc)
+    # Note: the arguments to zeta should be in as high precision as possible, might need
+    # some adjustment.
+    # See http://mpmath.org/doc/current/basics.html#providing-correct-input
+    return np.array([
+        corr * (zeta(s + 1, u1) + zeta(s + 1, u2))
+        for u1, u2 in zip(z1_u, z2_u)
+    ], dtype=np.complex128)
+
+# TODO: Remove old implementation at the end:
+# corr = [complex((1/pi)*alpha * wc**(1-s) * beta**(-(s+1)) * (zeta(s+1,(1+beta*wc-1.0j*wc*t)/(beta*wc)) + 
+#         zeta(s+1,(1+1.0j*wc*t)/(beta*wc)))) for t in tlist]
+```
 
 ```{code-cell} ipython3
+# Bath parameters:
 
-Q = sigmaz()
+Q = sigmaz()  # coupling operator
 
 alpha = 3.25
 T = 0.5
-
 wc = 1
-beta  = 1/T 
+beta = 1 / T 
 s = 1
+```
 
+We first try fitting the spectrum directly, using the underdamped case with the meier tannor form:
+
+```{code-cell} ipython3
+def pack(a, b, c):
+    """ Pack parameter lists for fitting. """
+    return list(a) + list(b) + list(c)
+    
+
+def unpack(params):
+    """ Unpack parameter lists for fitting. """
+    N = len(params) // 3
+    a = params[:N]
+    b = params[N:2 * N]
+    c = params[2 * N:]
+    return a, b, c
+
+
+def fit_func_real(w, params):
+    """ Calculate the fitted value of the function for the given parameters. """
+    a, b, c = unpack(params)
+    tot = 0
+    for i in range(len(a)):
+        tot += 2 * a[i] * b[i] * w / (((w + c[i])**2 + b[i]**2) * ((w - c[i])**2 + b[i]**2))
+    return tot
+
+
+def fit_real_part(J, w, alpha, wc, k):
+    """ Fit the real part of the spectral density. """
+    sigma = [0.0001] * len(w)
+
+    J_max = 100 * abs(max(J, key=abs))
+    params_k = []
+
+    for i in range(k):
+        N = i + 1
+        guesses = pack([J_max] * N, [wc] * N, [wc] * N)
+        lower_bounds = pack([-J_max] * N, [0.1 * wc] * N, [0.1 * wc] * N)
+        upper_bounds = pack([J_max] * N, [100 * wc] * N, [100 * wc] * N)
+                
+        params, _ = curve_fit(
+            lambda x, *params: fit_func_real(w, params),
+            w, J,
+            p0=guesses,
+            bounds=(lower_bounds, upper_bounds),
+            sigma=sigma,
+            maxfev=1000000000,
+        )
+        params_k.append(params)
+
+    return params_k
+```
+
+```{code-cell} ipython3
+w = np.linspace(0, 25, 20000)
+J = w * alpha * e**(-w / wc)
+params_k = fit_real_part(J, w, alpha=alpha, wc=wc, k=4)
+```
+
+```{code-cell} ipython3
+for k, params in enumerate(params_k):
+    y = fit_func_real(w, params)
+    lam, gamma, w0 = unpack(params)
+    print(f"Parameters [k={k}]: lam={lam}; gamma={gamma}; w0={w0}")
+    plt.plot(w, J, w, y)
+    plt.show()
+```
+
+We can check how each component of the fit looks, and also how the power spectrum compares to the original:
+
+```{code-cell} ipython3
+# Print the final fit with k parameters:
+
+def real_component_ith(w, i, lam, gamma, w0):
+    """ Return the i'th term of the fit for the real component. """
+    return 2 * lam[i] * gamma[i] * w / (((w + w0[i])**2 + gamma[i]**2) * ((w - w0[i])**2 + gamma[i]**2))
+    
+
+def plot_fit_real_components(J, w, lam, gamma, w0, save=True):
+    """ Plot the individual components of a fit to the spectral density. """
+    fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
+    axes.plot(w, J, 'r--', linewidth=2, label="original")
+    for i in range(len(lam)):
+        axes.plot(w, real_component_ith(w, i, lam, gamma, w0), linewidth=2, label=f"fit component {i}")
+
+
+    axes.set_xlabel(r'$w$', fontsize=28)
+    axes.set_ylabel(r'J', fontsize=28)
+    axes.legend()
+
+    if save:
+        fig.savefig('noisepower.eps')
+
+
+def plot_fit_real_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=True):
+    """ Plot the power spectrum of a fit against the actual power spectrum. """
+    w = np.linspace(-10, 10, 50000)
+
+    s_orig = w * alpha * e**(-abs(w) / wc) * ((1 / (e**(w * beta) - 1)) + 1)
+    s_fit = fit_func_real(w, pack(lam, gamma, w0)) * ((1 / (e**(w * beta) - 1)) + 1)
+    
+    fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
+    axes.plot(w, s_orig, 'r', linewidth=2, label="original")
+    axes.plot(w, s_fit, 'b', linewidth=2, label="fit")
+
+    axes.set_xlabel(r'$w$', fontsize=28)
+    axes.set_ylabel(r'S(w)', fontsize=28)
+    axes.legend()
+
+    if save:
+        fig.savefig('powerspectrum.eps')
+
+
+lam, gamma, w0 = unpack(params_k[-1])
+print(f"Parameters [k={len(params_k) - 1}]: lam={lam}; gamma={gamma}; w0={w0}")
+
+plot_fit_real_components(J, w, lam, gamma, w0, save=False)
+plot_fit_real_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=False)
+```
+
+```{code-cell} ipython3
+### DONE UP TO HERE ###
+```
+
+```{code-cell} ipython3
 
 k = 4 #number of curves to use in the spectrum fitting approach
 Nk = 1 # number of exponentials in approximation of the Matsubara approximation
@@ -110,12 +309,6 @@ NC = 5  #Cut off of the heom.  Data in the paper uses NC =11, which  can be very
 
 tlist = np.linspace(0, 10, 5000)
 tlist3 = linspace(0,15,50000)
-
-
-#note: the arguments to zeta should be in as high precision as possible, might need some adjustment
-# see http://mpmath.org/doc/current/basics.html#providing-correct-input
-ct = [complex((1/pi)*alpha * wc**(1-s) * beta**(-(s+1)) * (zeta(s+1,(1+beta*wc-1.0j*wc*t)/(beta*wc)) + 
-            zeta(s+1,(1+1.0j*wc*t)/(beta*wc)))) for t in tlist]
 
 
 #also check long timescales
@@ -128,212 +321,11 @@ corrIana = imag(ctlong)
 
 
 pref = 1.
-
-```
-
-We first try fitting the spectrum directly.
-
-```{code-cell} ipython3
-
-#lets try fitting the spectrurum
-#use underdamped case with meier tannor form 
-
-
-wlist = np.linspace(0, 25, 20000)
-
-from scipy.optimize import curve_fit
-
-#seperate functions for plotting later:
-
-
-
-def fit_func_nocost(x, a, b, c, N):
-    tot = 0
-    for i in range(N):
-        
-        tot+= 2 * a[i] * b[i] * (x)/(((x+c[i])**2 + (b[i]**2))*((x-c[i])**2 + (b[i]**2)))
-    cost = 0.
-    
-    return tot   
-
-def wrapper_fit_func_nocost(x, N, *args):
-    a, b, c = list(args[0][:N]), list(args[0][N:2*N]),list(args[0][2*N:3*N])
-    # print("debug")
-    return fit_func_nocost(x, a, b, c, N)
-
-
-# function that evaluates values with fitted params at
-# given inputs
-def checker(tlist, vals, N):
-    y = []
-    for i in tlist:
-        # print(i)
-        
-        y.append(wrapper_fit_func_nocost(i, N, vals))
-    return y
-
-
-#######
-#Real part 
-
-def wrapper_fit_func(x, N, *args):
-    a, b, c = list(args[0][:N]), list(args[0][N:2*N]),list(args[0][2*N:3*N])
-    # print("debug")
-    return fit_func(x, a, b, c, N)
-
-
-
-def fit_func(x, a, b, c,  N):
-    tot = 0
-    for i in range(N):
-        
-        tot+= 2 * a[i] * b[i] * (x)/(((x+c[i])**2 + (b[i]**2))*((x-c[i])**2 + (b[i]**2)))
-    cost = 0.
-    #for i in range(N):
-        #print(i)
-    #    cost += ((corrRana[0]-a[i]*np.cos(d[i])))
-        
-        
-    tot+=0.0*cost
-    
-    return tot      
-
-def fitterR(ans, tlist, k):
-    # the actual computing of fit
-    popt = []
-    pcov = [] 
-    # tries to fit for k exponents
-    for i in range(k):
-        #params_0 = [0]*(2*(i+1))
-        params_0 = [0.]*(3*(i+1))
-        upper_a = 100*abs(max(ans, key = abs))
-        #sets initial guess
-        guess = []
-        #aguess = [ans[0]]*(i+1)#[max(ans)]*(i+1)
-        aguess = [abs(max(ans, key = abs))]*(i+1)
-        bguess = [1*wc]*(i+1)
-        cguess = [1*wc]*(i+1)
-        
-        guess.extend(aguess)
-        guess.extend(bguess)
-        guess.extend(cguess)
-       
-        # sets bounds
-        # a's = anything , b's negative
-        # sets lower bound
-        b_lower = []
-        alower = [-upper_a]*(i+1)
-        blower = [0.1*wc]*(i+1)
-        clower = [0.1*wc]*(i+1)
-        
-        b_lower.extend(alower)
-        b_lower.extend(blower)
-        b_lower.extend(clower)
-        
-        # sets higher bound
-        b_higher = []
-        ahigher = [upper_a]*(i+1)
-        #bhigher = [np.inf]*(i+1)
-        bhigher = [100*wc]*(i+1)
-        chigher = [100*wc]*(i+1)
-      
-        b_higher.extend(ahigher)
-        b_higher.extend(bhigher)
-        b_higher.extend(chigher)
-       
-        param_bounds = (b_lower, b_higher)
-        
-        p1, p2 = curve_fit(lambda x, *params_0: wrapper_fit_func(x, i+1, \
-            params_0), tlist, ans, p0=guess, bounds = param_bounds,sigma=[0.0001 for w in wlist], maxfev = 1000000000)
-        popt.append(p1)
-        pcov.append(p2)
-        print(i+1)
-    return popt
-# print(popt)
-
-
-J = [w * alpha * e**(-w/wc)  for w in wlist]
-
-
-popt1 = fitterR(J, wlist, k)
-for i in range(k):
-    y = checker(wlist, popt1[i],i+1)
-    print(popt1[i])
-    plt.plot(wlist, J, wlist, y)
-    
-    plt.show()
-  
-```
-
-```{code-cell} ipython3
-
-
-lam = list(popt1[k-1])[:k]
-
-gamma = list(popt1[k-1])[k:2*k] #damping terms
-
-w0 = list(popt1[k-1])[2*k:3*k] #w0 termss
-
-
-
-
-print(lam)
-print(gamma)
-print(w0)
-```
-
-We can check how each component of the fit looks, and also how the power spectrum compares to the original
-
-```{code-cell} ipython3
-
-lamT = []
-
-print(lam)
-print(gamma)
-print(w0)
-
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-axes.plot(wlist, J, 'r--', linewidth=2, label="original")
-for kk,ll in enumerate(lam):
-  
-    axes.plot(wlist,  [2* lam[kk] * gamma[kk] * (w)/(((w+w0[kk])**2 + (gamma[kk]**2))*((w-w0[kk])**2 + (gamma[kk]**2))) for w in wlist],linewidth=2, label="fit")
-
-
-
-
-
-axes.set_xlabel(r'$w$', fontsize=28)
-axes.set_ylabel(r'J', fontsize=28)
-
-axes.legend()
-fig.savefig('noisepower.eps')
-wlist2 = np.linspace(-10,10 , 50000)
-
-
-
-s1 =  [w * alpha * e**(-abs(w)/wc) *  ((1/(e**(w/T)-1))+1) for w in wlist2]
-s2 = [sum([(2* lam[kk] * gamma[kk] * (w)/(((w+w0[kk])**2 + (gamma[kk]**2))*((w-w0[kk])**2 + (gamma[kk]**2)))) * ((1/(e**(w/T)-1))+1)  for kk,lamkk in enumerate(lam)]) for w in wlist2]
-
-
-fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
-axes.plot(wlist2, s1, 'r', linewidth=2,label="original")
-axes.plot(wlist2, s2, 'b', linewidth=2,label="fit")
-
-axes.set_xlabel(r'$w$', fontsize=28)
-axes.set_ylabel(r'S(w)', fontsize=28)
-
-#axes.axvline(x=Del)
-print(min(s2))
-axes.legend()
-
-#fig.savefig('powerspectrum.eps')
-#J(w>0) * (n(w>w)+1)
 ```
 
 We now collate Matsubara terms, with the terminator, for each fit component.
 
 ```{code-cell} ipython3
-
 TermMax = 1000
 TermOps = 0.*spre(sigmaz())
 
@@ -374,22 +366,10 @@ for kk, ll in enumerate(lam):
     vkAI.extend( [-(-1.0j*(Om) - Gamma),-(1.0j*(Om) - Gamma)])
     
     TermOps += term * (2*spre(Q)*spost(Q.dag()) - spre(Q.dag()*Q) - spost(Q.dag()*Q))
-
-
-
-Q2 = []
-
-NR = len(ckAR)
-NI = len(ckAI)
-
-Q2.extend([ sigmaz() for kk in range(NR)])
-Q2.extend([ sigmaz() for kk in range(NI)])
 ```
 
 ```{code-cell} ipython3
-
-
-corrRana =  real(ctlong)
+corrRana = real(ctlong)
 corrIana = imag(ctlong)
 
 def checker2(tlist, cklist, gamlist):
@@ -410,7 +390,6 @@ yR = checker2(tlist3,ckAR,vkAR)
 
 
 yI = checker2(tlist3,ckAI,vkAI)
-
 ```
 
 ```{code-cell} ipython3
@@ -435,9 +414,6 @@ from cycler import cycler
 
 wlist2 = np.linspace(-2*pi*4,2 * pi *4 , 50000)
 wlist2 = np.linspace(-7,7 , 50000)
-
-
-
 
 fig = plt.figure(figsize=(12,10))
 grid = plt.GridSpec(2, 2, wspace=0.4, hspace=0.3)
@@ -525,7 +501,6 @@ axes4.text(4.,1.2,"(d)",fontsize=28)
 Now we run the HEOM with the correlations functions from the fit spectral densities.
 
 ```{code-cell} ipython3
-
 NR = len(ckAR)
 NI = len(ckAI)
 print(NR)
@@ -533,7 +508,6 @@ print(NI)
 Q2 = []
 Q2.extend([ sigmaz() for kk in range(NR)])
 Q2.extend([ sigmaz() for kk in range(NI)])
-
 ```
 
 ```{code-cell} ipython3
@@ -588,7 +562,6 @@ P12exp11K3NK2TL = expect(resultFit.states, P12p)
 Now we try the alternative, fitting the correlation functions directly
 
 ```{code-cell} ipython3
-
 #Getting a good fit can involve making sure we capture short and long time scales. 
 
 tlist3 = linspace(0,15,50000)
@@ -603,7 +576,6 @@ corrIana = imag(ctlong)
 ```
 
 ```{code-cell} ipython3
-
 tlist2 = tlist3
 from scipy.optimize import curve_fit
 
@@ -826,7 +798,6 @@ for i in range(k1):
 ```
 
 ```{code-cell} ipython3
-
 ckAR1 = list(popt1[kc-1])[:kc]
 #0.5 from cosine
 ckAR = [0.5*x+0j for x in ckAR1]
@@ -838,12 +809,9 @@ vkAR1 = list(popt1[kc-1])[kc:2*kc] #damping terms
 wkAR1 = list(popt1[kc-1])[2*kc:3*kc] #oscillating term
 vkAR = [-x-1.0j*wkAR1[kk] for kk, x in enumerate(vkAR1)] #combine
 vkAR.extend([-x+1.0j*wkAR1[kk] for kk, x in enumerate(vkAR1)]) #double
-
-
 ```
 
 ```{code-cell} ipython3
-
 ckAI1 = list(popt2[k1-1])[:k1]
 #0.5 from cosine
 ckAI = [-1.0j*0.5*x for x in ckAI1]
@@ -856,15 +824,11 @@ vkAI1 = list(popt2[k1-1])[k1:2*k1] #damping terms
 wkAI1 = list(popt2[k1-1])[2*k1:3*k1] #oscillating term
 vkAI = [-x-1.0j*wkAI1[kk] for kk, x in enumerate(vkAI1)] #combine
 vkAI.extend([-x+1.0j*wkAI1[kk] for kk, x in enumerate(vkAI1)]) #double
-
-
 ```
 
 We can convert the fitted correlations functions into a power spectrum, and compare to the original one
 
 ```{code-cell} ipython3
-
-
 def spectrum_matsubara_approx(w, ck, vk):
     """
     Calculates the approximate Matsubara correlation spectrum
@@ -910,11 +874,9 @@ def spectrum_approx(w, ck,vk):
         #sw.append((ckk*(real(vk[kk]))/((w-imag(vk[kk]))**2+(real(vk[kk])**2))))
         sw.append((ckk*(real(vk[kk]))/((w-imag(vk[kk]))**2+(real(vk[kk])**2))))
     return sw
-
 ```
 
 ```{code-cell} ipython3
-
 from cycler import cycler
 
 
@@ -993,7 +955,6 @@ axes3.text(-4,1.5,"(c)",fontsize=28)
 ```
 
 ```{code-cell} ipython3
-
 Q2 = []
 
 NR = len(ckAR)
@@ -1005,8 +966,6 @@ options = Options(nsteps=15000, store_states=True, rtol=1e-14, atol=1e-14)
 ```
 
 ```{code-cell} ipython3
-
-
 NC = 5
 
 #Q2 = [Q for kk in range(NR+NI)]
@@ -1024,7 +983,6 @@ print(end - start)
 ```
 
 ```{code-cell} ipython3
-
 tlist4 = np.linspace(0, 30*pi/Del, 600)
 rho0 = basis(2,0) * basis(2,0).dag()   
 
