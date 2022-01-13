@@ -20,14 +20,22 @@ kernelspec:
 
 The HEOM method solves the dynamics and steady state of a system and its environment, the latter of which is encoded in a set of auxiliary density matrices.
 
-In this example we show the evolution of a single two-level system in contact with a single Bosonic environment.  The properties of the system are encoded in Hamiltonian, and a coupling operator which describes how it is coupled to the environment.
+In this example we show the evolution of a single two-level system in contact with a single bosonic environment.
 
-The Bosonic environment is implicitly assumed to obey a particular Hamiltonian (see paper), the parameters of which are encoded in the spectral density, and subsequently the free-bath correlation functions.
+The properties of the system are encoded in Hamiltonian, and a coupling operator which describes how it is coupled to the environment.
 
-In the example below we show how model an Ohmic environment with exponential cut-off in two ways. First we fit the spectrum with a set of underdamped brownian oscillator functions. Second, we evaluate the correlation functions, and fit those with a certain choice of exponential functions.
+The bosonic environment is implicitly assumed to obey a particular Hamiltonian (see paper), the parameters of which are encoded in the spectral density, and subsequently the free-bath correlation functions.
+
+In the example below we show how model an Ohmic environment with exponential cut-off in two ways:
+
+* First we fit the spectral density with a set of underdamped brownian oscillator functions.
+
+* Second, we evaluate the correlation functions, and fit those with a certain choice of exponential functions.
+
+In each case we will use the fit parameters to determine the correlation function expansion co-efficients needed to construct a description of the bath (i.e. a `BosonicBath` object) to supply to the `HEOMSolver` so that we can solve for the system dynamics. 
 
 ```{code-cell} ipython3
-%pylab inlinex
+%pylab inline
 ```
 
 ```{code-cell} ipython3
@@ -116,11 +124,13 @@ Hsys = 0.5 * eps * sigmaz() + 0.5 * Del * sigmax()
 rho0 = basis(2,0) * basis(2,0).dag()  
 ```
 
-### Constructing the Ohmic bath correlation functions from the analytic expression
+### Analytical expressions for the Ohmic bath correlation function and spectral density
 
 +++
 
-We first construct the correlation functions by directly coding the analytical expression (see, e.g., http://www1.itp.tu-berlin.de/brandes/public_html/publications/notes.pdf for a derivation, equation 7.59):
+Before we begin fitting, let us examine the analytic expressions for the correlation and spectral density functions and write Python equivalents. 
+
+The correlation function is given by (see, e.g., http://www1.itp.tu-berlin.de/brandes/public_html/publications/notes.pdf for a derivation, equation 7.59):
 
 \begin{align}
 C(t) =& \: 2 \alpha \omega_{c}^{1 - s} \beta^{- (s + 1)} \: \times \\
@@ -135,6 +145,12 @@ where $\Gamma$ is the Gamma function and
 
 is the generalized Zeta function. The Ohmic case is given by $s = 1$.
 
+The corresponding spectral density for the Ohmic case is:
+
+\begin{equation}
+J(\omega) = \omega \alpha e^{- \frac{\omega}{\omega_c}}
+\end{equation}
+
 ```{code-cell} ipython3
 # Zero temperature limit:
 #
@@ -146,14 +162,13 @@ is the generalized Zeta function. The Ohmic case is given by $s = 1$.
 ```
 
 ```{code-cell} ipython3
-def corr_ohmic(t, alpha, wc, beta, s=1):
+def ohmic_correlation(t, alpha, wc, beta, s=1):
     """ The Ohmic bath correlation function as a function of t (and the bath parameters). """
     # original code had (1/pi) instead of 2 as the prefactor; why?
     corr = 2 * alpha * wc**(1 - s) * beta**(-(s + 1)) * gamma(s + 1)
     z1_u = (1 + beta * wc - 1.0j * wc * t) / (beta * wc)
-    z2_u = (1 + 1.0j * wc * t) / (beta * wc)
-    # Note: the arguments to zeta should be in as high precision as possible, might need
-    # some adjustment.
+    z2_uz = (1 + 1.0j * wc * t) / (beta * wc)
+    # Note: the arguments to zeta should be in as high precision as possible.
     # See http://mpmath.org/doc/current/basics.html#providing-correct-input
     return np.array([
         corr * (zeta(s + 1, u1) + zeta(s + 1, u2))
@@ -164,6 +179,14 @@ def corr_ohmic(t, alpha, wc, beta, s=1):
 # corr = [complex((1/pi)*alpha * wc**(1-s) * beta**(-(s+1)) * (zeta(s+1,(1+beta*wc-1.0j*wc*t)/(beta*wc)) + 
 #         zeta(s+1,(1+1.0j*wc*t)/(beta*wc)))) for t in tlist]
 ```
+
+```{code-cell} ipython3
+def ohmic_spectral_density(w, alpha, wc):
+    """ The Ohmic bath spectral density as a function of w (and the bath parameters). """
+    return w * alpha * e**(-w / wc)
+```
+
+Finally, let's set the bath parameters we will work with and write down some measurement operators:
 
 ```{code-cell} ipython3
 # Bath parameters:
@@ -177,12 +200,36 @@ beta = 1 / T
 s = 1
 ```
 
-We first try fitting the spectrum directly, using the underdamped case with the meier tannor form:
+```{code-cell} ipython3
+# Define some operators with which we will measure the system
+# 1,1 element of density matrix - corresonding to groundstate
+P11p = basis(2,0) * basis(2,0).dag()
+P22p = basis(2,1) * basis(2,1).dag()
+# 1,2 element of density matrix  - corresonding to coherence
+P12p = basis(2,0) * basis(2,1).dag()
+```
+
+### Building the HEOM bath by fitting the spectral density
+
++++
+
+We begin by fitting the spectral density, using a series of $k$ underdamped harmonic oscillators case with the Meier-Tannor form:
+
+\begin{equation}
+J_{\mathrm approx}(\omega; a, b, c) = \sum_{i=0}^{k-1} \frac{2 a_i b_i w}{((w + c_i)^2 + b_i^2) ((w - c_i)^2 + b_i^2)}
+\end{equation}
+
+where $a, b$ and $c$ are the fit parameters and each is a vector of length $k$.
+
+<span style="color:red">*TODO: What is the Meier-Tannor form? Reference?*</span>
 
 ```{code-cell} ipython3
+# Helper functions for packing the paramters a, b and c into a single numpy
+# array as required by SciPy's curve_fit:
+
 def pack(a, b, c):
     """ Pack parameter lists for fitting. """
-    return list(a) + list(b) + list(c)
+    return np.concatenate((a, b, c))
     
 
 def unpack(params):
@@ -192,75 +239,93 @@ def unpack(params):
     b = params[N:2 * N]
     c = params[2 * N:]
     return a, b, c
+```
 
+```{code-cell} ipython3
+# The approximate spectral density and a helper for fitting the approximate spectral density
+# to values calculated from the analytical formula:
 
-def fit_func_real(w, params):
+def spectral_density_approx(w, a, b, c):
     """ Calculate the fitted value of the function for the given parameters. """
-    a, b, c = unpack(params)
     tot = 0
     for i in range(len(a)):
         tot += 2 * a[i] * b[i] * w / (((w + c[i])**2 + b[i]**2) * ((w - c[i])**2 + b[i]**2))
     return tot
 
 
-def fit_real_part(J, w, alpha, wc, k):
-    """ Fit the real part of the spectral density. """
+def fit_spectral_density(J, w, alpha, wc, N):
+    """ Fit the spectral density with N underdamped oscillators. """
     sigma = [0.0001] * len(w)
 
     J_max = 100 * abs(max(J, key=abs))
     params_k = []
 
-    for i in range(k):
-        N = i + 1
-        guesses = pack([J_max] * N, [wc] * N, [wc] * N)
-        lower_bounds = pack([-J_max] * N, [0.1 * wc] * N, [0.1 * wc] * N)
-        upper_bounds = pack([J_max] * N, [100 * wc] * N, [100 * wc] * N)
-                
-        params, _ = curve_fit(
-            lambda x, *params: fit_func_real(w, params),
-            w, J,
-            p0=guesses,
-            bounds=(lower_bounds, upper_bounds),
-            sigma=sigma,
-            maxfev=1000000000,
-        )
-        params_k.append(params)
+    guesses = pack([J_max] * N, [wc] * N, [wc] * N)
+    lower_bounds = pack([-J_max] * N, [0.1 * wc] * N, [0.1 * wc] * N)
+    upper_bounds = pack([J_max] * N, [100 * wc] * N, [100 * wc] * N)
 
-    return params_k
+    params, _ = curve_fit(
+        lambda x, *params: spectral_density_approx(w, *unpack(params)),
+        w, J,
+        p0=guesses,
+        bounds=(lower_bounds, upper_bounds),
+        sigma=sigma,
+        maxfev=1000000000,
+    )
+
+    return unpack(params)
 ```
+
+With the spectral density approximation $J_{\mathrm approx}(w; a, b, c)$ implemented above, we can now perform the fit and examine the results.
 
 ```{code-cell} ipython3
 w = np.linspace(0, 25, 20000)
-J = w * alpha * e**(-w / wc)
-params_k = fit_real_part(J, w, alpha=alpha, wc=wc, k=4)
+J = ohmic_spectral_density(w, alpha=alpha, wc=wc)
+
+params_k = [
+    fit_spectral_density(J, w, alpha=alpha, wc=wc, N=i+1)
+    for i in range(4)
+]
 ```
+
+Let's plot the fit for each $k$ and examine how it improves with an increasing number of terms:
 
 ```{code-cell} ipython3
 for k, params in enumerate(params_k):
-    y = fit_func_real(w, params)
-    lam, gamma, w0 = unpack(params)
+    lam, gamma, w0 = params
+    y = spectral_density_approx(w, lam, gamma, w0)
     print(f"Parameters [k={k}]: lam={lam}; gamma={gamma}; w0={w0}")
     plt.plot(w, J, w, y)
     plt.show()
 ```
 
-We can check how each component of the fit looks, and also how the power spectrum compares to the original:
+The fit with four terms looks good. Let's take a closer look at it by plotting the contribution of each term of the fit:
 
 ```{code-cell} ipython3
-# Print the final fit with k parameters:
+# The parameters for the fit with four terms:
 
-def real_component_ith(w, i, lam, gamma, w0):
-    """ Return the i'th term of the fit for the real component. """
+lam, gamma, w0 = params_k[-1]
+print(f"Parameters [k={len(params_k) - 1}]: lam={lam}; gamma={gamma}; w0={w0}")
+```
+
+```{code-cell} ipython3
+# Plot the components of the fit separately:
+
+def spectral_density_ith_component(w, i, lam, gamma, w0):
+    """ Return the i'th term of the approximation for the spectral density. """
     return 2 * lam[i] * gamma[i] * w / (((w + w0[i])**2 + gamma[i]**2) * ((w - w0[i])**2 + gamma[i]**2))
     
 
-def plot_fit_real_components(J, w, lam, gamma, w0, save=True):
+def plot_spectral_density_fit_components(J, w, lam, gamma, w0, save=True):
     """ Plot the individual components of a fit to the spectral density. """
     fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
     axes.plot(w, J, 'r--', linewidth=2, label="original")
     for i in range(len(lam)):
-        axes.plot(w, real_component_ith(w, i, lam, gamma, w0), linewidth=2, label=f"fit component {i}")
-
+        axes.plot(
+            w, spectral_density_ith_component(w, i, lam, gamma, w0),
+            linewidth=2,
+            label=f"fit component {i}",
+    )
 
     axes.set_xlabel(r'$w$', fontsize=28)
     axes.set_ylabel(r'J', fontsize=28)
@@ -270,12 +335,18 @@ def plot_fit_real_components(J, w, lam, gamma, w0, save=True):
         fig.savefig('noisepower.eps')
 
 
-def plot_fit_real_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=True):
+plot_spectral_density_fit_components(J, w, lam, gamma, w0, save=False)
+```
+
+And let's also compare the power spectrum of the fit and the analytical spectral density:
+
+```{code-cell} ipython3
+def plot_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=True):
     """ Plot the power spectrum of a fit against the actual power spectrum. """
     w = np.linspace(-10, 10, 50000)
 
     s_orig = w * alpha * e**(-abs(w) / wc) * ((1 / (e**(w * beta) - 1)) + 1)
-    s_fit = fit_func_real(w, pack(lam, gamma, w0)) * ((1 / (e**(w * beta) - 1)) + 1)
+    s_fit = spectral_density_approx(w, lam, gamma, w0) * ((1 / (e**(w * beta) - 1)) + 1)
     
     fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
     axes.plot(w, s_orig, 'r', linewidth=2, label="original")
@@ -289,19 +360,112 @@ def plot_fit_real_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=True):
         fig.savefig('powerspectrum.eps')
 
 
-lam, gamma, w0 = unpack(params_k[-1])
-print(f"Parameters [k={len(params_k) - 1}]: lam={lam}; gamma={gamma}; w0={w0}")
-
-plot_fit_real_components(J, w, lam, gamma, w0, save=False)
-plot_fit_real_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=False)
+plot_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=False)
 ```
+
+Now that we have a good fit to the spectral density, we can calculate the Matsubara expansion terms for the `BosonicBath` from them. At the same time we will calculate the Matsubara terminator for this expansion.
+
+```{code-cell} ipython3
+def matsubara_coefficients(lam, gamma, w0, beta, Q, Nk):
+    """ Calculate the Matsubara co-efficients for a fit to the spectral density. """
+
+    terminator = 0. * spre(Q)  # initial 0 value with the correct dimensions
+    terminator_max_k = 1000  # the number of matsubara expansion terms to include in the terminator
+    
+    ckAR = []
+    vkAR = []
+    ckAI = []
+    vkAI = []
+
+    for lamt, Gamma, Om in zip(lam, gamma, w0):
+        ckAR.extend([
+            (lamt / (4 * Om)) * coth(beta * (Om + 1.0j * Gamma) / 2),
+            (lamt / (4 * Om)) * coth(beta * (Om - 1.0j * Gamma) / 2),
+        ])
+        for k in range(1, Nk + 1):
+            ek = 2 * np.pi * k / beta
+            ckAR.append(
+                (-2 * lamt * 2 * Gamma / beta) * ek /
+                (((Om + 1.0j * Gamma)**2 + ek**2) * ((Om - 1.0j * Gamma)**2 + ek**2))
+            )
+
+        terminator_factor = 0
+        for k in range(Nk + 1, terminator_max_k):
+            ek = 2 * pi * k / beta
+            ck = (
+                (-2 * lamt * 2 * Gamma / beta) * ek /
+                (((Om + 1.0j * Gamma)**2 + ek**2) * ((Om - 1.0j * Gamma)**2 + ek**2))
+            )
+            terminator_factor += ck / ek
+        terminator += terminator_factor * (
+            2 * spre(Q) * spost(Q.dag()) - spre(Q.dag() * Q) - spost(Q.dag() * Q)
+        )
+
+        vkAR.extend([
+            -1.0j * Om + Gamma,
+            1.0j * Om + Gamma,
+        ])
+        vkAR.extend([
+            2 * np.pi * k * T + 0.j
+            for k in range(1, Nk + 1)
+        ])
+
+        ckAI.extend([
+            -0.25 * lamt * 1.0j / Om,
+            0.25 * lamt * 1.0j / Om,
+        ])
+        vkAI.extend([
+            -(-1.0j * Om - Gamma),
+            -(1.0j * Om - Gamma),
+        ])
+        
+    return ckAR, vkAR, ckAI, vkAI, terminator
+```
+
+```{code-cell} ipython3
+options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method="bdf")
+# This problem is a little stiff, so we use  the BDF method to solve the ODE ^^^
+
+ckAR, vkAR, ckAI, vkAI, terminator = matsubara_coefficients(lam, gamma, w0, beta=beta, Q=Q, Nk=1)
+Ltot = liouvillian(Hsys) + terminator
+tlist = np.linspace(0, 30 * pi / Del, 600)
+
+with timer("RHS construction time"):
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOM_spectral_fit = HEOMSolver(Ltot, bath, max_depth=5, options=options)
+    
+with timer("ODE solver time"):
+    results_spectral_fit = HEOM_spectral_fit.run(rho0, tlist)
+```
+
+```{code-cell} ipython3
+plot_result_expectations([
+    (results_spectral_fit, P11p, 'b', "P11 (spectral fit)"),
+    (results_spectral_fit, P12p, 'r', "P12 (spectral fit)"),
+]);
+```
+
+### Building the HEOM bath by fitting the correlation function
+
++++
+
+Having successfully fitted the spectral density and used the result to calculate the Matsubara expansion and terminator for the HEOM bosonic bath, we now proceed to the second case of fitting the correlation function itself instead.
+
+XXX
+
+begin by fitting the spectral density, using a series of $k$ underdamped harmonic oscillators case with the Meier-Tannor form:
+
+\begin{equation}
+J_{\mathrm approx}(\omega; a, b, c) = \sum_{i=0}^{k-1} \frac{2 a_i b_i w}{((w + c_i)^2 + b_i^2) ((w - c_i)^2 + b_i^2)}
+\end{equation}
+
+where $a, b$ and $c$ are the fit parameters and each is a vector of length $k$.
 
 ```{code-cell} ipython3
 ### DONE UP TO HERE ###
 ```
 
 ```{code-cell} ipython3
-
 k = 4 #number of curves to use in the spectrum fitting approach
 Nk = 1 # number of exponentials in approximation of the Matsubara approximation
 NC = 5  #Cut off of the heom.  Data in the paper uses NC =11, which  can be very slow using the purely python 
@@ -321,51 +485,6 @@ corrIana = imag(ctlong)
 
 
 pref = 1.
-```
-
-We now collate Matsubara terms, with the terminator, for each fit component.
-
-```{code-cell} ipython3
-TermMax = 1000
-TermOps = 0.*spre(sigmaz())
-
-pref = 1
-
-ckAR = []
-vkAR = []
-ckAI = []
-vkAI = []
-for kk, ll in enumerate(lam):
-    #print(kk)
-    lamt = lam[kk]
-    Om = w0[kk]
-    Gamma = gamma[kk]
-    ckAR_temp = [(lamt/(4*Om))*coth(beta*(Om+1.0j*Gamma)/2),(lamt/(4*Om))*coth(beta*(Om-1.0j*Gamma)/2)]
-    for k in range(1,Nk+1):
-        #print(k)
-        ek = 2*pi*k/beta
-        ckAR_temp.append((-2*lamt*2*Gamma/beta)*ek/(((Om+1.0j*Gamma)**2+ek**2)*((Om-1.0j*Gamma)**2+ek**2)))
-    
-    
-    
-    term = 0
-    for k in range(Nk+1,TermMax):
-        #print(k)
-        ek = 2*pi*k/beta
-        ck = ((-2*lamt*2*Gamma/beta)*ek/(((Om+1.0j*Gamma)**2+ek**2)*((Om-1.0j*Gamma)**2+ek**2)))
-        term += ck/ek
-    ckAR.extend(ckAR_temp)
-    
-    vkAR_temp =   [-1.0j*Om+Gamma,1.0j*Om+Gamma]
-    vkAR_temp.extend([2 * np.pi * k * T + 0.j for k in range(1,Nk+1)])
-    
-    vkAR.extend(vkAR_temp)
-    factor=1./4.
-    ckAI.extend([-factor*lamt*1.0j/(Om),factor*lamt*1.0j/(Om)])
-
-    vkAI.extend( [-(-1.0j*(Om) - Gamma),-(1.0j*(Om) - Gamma)])
-    
-    TermOps += term * (2*spre(Q)*spost(Q.dag()) - spre(Q.dag()*Q) - spost(Q.dag()*Q))
 ```
 
 ```{code-cell} ipython3
@@ -501,35 +620,6 @@ axes4.text(4.,1.2,"(d)",fontsize=28)
 Now we run the HEOM with the correlations functions from the fit spectral densities.
 
 ```{code-cell} ipython3
-NR = len(ckAR)
-NI = len(ckAI)
-print(NR)
-print(NI)
-Q2 = []
-Q2.extend([ sigmaz() for kk in range(NR)])
-Q2.extend([ sigmaz() for kk in range(NI)])
-```
-
-```{code-cell} ipython3
-#This problem is a little stiff, so we use  the BDF method to solve the ODE.
-options = Options(nsteps=1500, store_states=True, rtol=1e-12, atol=1e-12, method="bdf") 
-import time 
-
-start = time.time()
-print("start")
-
-
-Ltot = liouvillian(Hsys) + TermOps
-
-
-HEOMFit = BosonicHEOMSolver(Ltot, Q2, ckAR, ckAI, vkAR, vkAI, NC, options=options)
-
-print("end")
-end = time.time()
-print(end - start)
-```
-
-```{code-cell} ipython3
 #tlist4 = np.linspace(0, 50, 1000)
 
 tlist4 = np.linspace(0, 4*pi/Del, 600)
@@ -583,10 +673,7 @@ from scipy.optimize import curve_fit
 def fit_func_nocost(x, a, b, c, N):
     tot = 0
     for i in range(N):
-        # print(i)
         tot += a[i]*np.exp(b[i]*x)*np.cos(c[i]*x)
-    cost = 0.
-    
     return tot   
 
 def wrapper_fit_func_nocost(x, N, *args):
@@ -619,17 +706,9 @@ def wrapper_fit_func(x, N, *args):
 def fit_func(x, a, b, c, N):
     tot = 0
     for i in range(N):
-        # print(i)
         tot += a[i]*np.exp(b[i]*x)*np.cos(c[i]*x )
-    cost = 0.
-    for i in range(N):
-        #print(i)
-        cost += ((corrRana[0]-a[i]))
-        
-        
-    tot+=0.0*cost
-    
     return tot      
+
 
 def fitterR(ans, tlist_local, k):
     # the actual computing of fit
@@ -682,8 +761,6 @@ def fitterR(ans, tlist_local, k):
         pcov.append(p2)
         print(i+1)
     return popt
-# print(popt)
-
 
 
 kc = 3
@@ -705,16 +782,7 @@ for i in range(k):
 def fit_func2(x, a, b, c, N):
     tot = 0
     for i in range(N):
-        # print(i)
-        tot += a[i]*np.exp(b[i]*x)*np.sin(c[i]*x)
-    cost = 0.
-    for i in range(N):
-        # print(i)
-        cost += (corrIana[0]-a[i])
-        
-        
-    tot+=0*cost
-    
+        tot += a[i]*np.exp(b[i]*x)*np.sin(c[i]*x)    
     return tot 
 # actual fitting function
 
@@ -786,7 +854,6 @@ def fitterI(ans, tlist_local, k):
         pcov.append(p2)
         print(i+1)
     return popt
-# print(popt)
 
 k1 = 3
 popt2 = fitterI(corrIana, tlist2, k1)
