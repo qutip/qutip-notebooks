@@ -5,14 +5,14 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.4
+    jupytext_version: 1.13.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
-# Example 4a: Fermionic single impurity model
+# Example 5a: Fermionic single impurity model
 
 ## Example of the Fermionic HEOM solver
 
@@ -283,7 +283,6 @@ print(curr_ana)
 ```
 
 ```{code-cell} ipython3
-
 def state_current(ado_state,bath_tag):
         level_1_aux = [
             (ado_state.extract(label), ado_state.exps(label)[0])
@@ -308,7 +307,6 @@ print(state_current(fullssP,"L")+state_current(fullssP,"R"))
 ```
 
 ```{code-cell} ipython3
-
 
 def state_current(ado_state,bath_tag):
         level_1_aux = [

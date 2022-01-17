@@ -5,14 +5,14 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.4
+    jupytext_version: 1.13.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
-## Example of dynamics in Fenna-Mathews-Olsen complex (FMO)
+## Example 2: Dynamics in Fenna-Mathews-Olsen complex (FMO)
 
 ### Introduction
 
@@ -216,7 +216,6 @@ plt.xticks([0.,500,1000],[0,500,1000])
  It is more useful to explicitly construct the various parts of the Bloch-Redfield master equation explicitly, and show that it is the pure-dephasing which suppresses coherence in these oscillations.
 
 ```{code-cell} ipython3
-
 def n_th(energy):
    
     beta=1./Temperature

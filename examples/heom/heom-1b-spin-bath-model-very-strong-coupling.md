@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-# Example 1e: Spin-Bath model (very strong coupling)
+# Example 1b: Spin-Bath model (very strong coupling)
 
 ### Introduction
 

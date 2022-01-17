@@ -26,7 +26,7 @@ This collection of examples from the paper illustrates how to use QuTiP's HEOM t
 
 * [Example 1b: Spin-Bath model (very strong coupling)](./heom-1b-spin-bath-model-very-strong-coupling.ipynb)
 
-* [Example 1c: Spin-Bath model (underdamped case)](./heom-1c-spin-bath-model-underdamped-sd.ipynb])
+* [Example 1c: Spin-Bath model (underdamped case)](./heom-1c-spin-bath-model-underdamped-sd.ipynb)
 
 * [Example 1d: Spin-Bath model, fitting of spectrum and correlation functions](./heom-1d-spin-bath-model-ohmic-fitting.ipynb)
 

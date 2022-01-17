@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-# Example 1b: Spin-Bath model (Underdamped Case)
+# Example 1c: Spin-Bath model (Underdamped Case)
 ### Introduction
 
 +++

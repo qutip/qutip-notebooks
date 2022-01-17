@@ -5,14 +5,14 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.4
+    jupytext_version: 1.13.5
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
-# Dynamical decoupling of a non-Markovian environment
+# Example 4: Dynamical decoupling of a non-Markovian environment
 
 +++
 
@@ -35,7 +35,6 @@ from qutip import *
 ```
 
 ```{code-cell} ipython3
-
 from qutip.nonmarkov.bofin_solvers import HEOMSolver
 from qutip.nonmarkov.bofin_baths import DrudeLorentzPadeBath, DrudeLorentzBath
 ```
@@ -49,11 +48,9 @@ def coth(x):
 
 def cot(x):
     return 1./np.tan(x)
-
 ```
 
 ```{code-cell} ipython3
-
 
 pref = 1.
 Nk = 3
@@ -77,11 +74,9 @@ fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
 axes.plot(wlist, J, 'r', linewidth=2)
 axes.set_xlabel(r'$\omega$', fontsize=28)
 axes.set_ylabel(r'J', fontsize=28)
-
 ```
 
 ```{code-cell} ipython3
-
 wq = 1.
 Hsys = 0.0 * sigmaz()
 
@@ -125,11 +120,9 @@ outputDD  = resultHEOM.run(initial_state2,tlist2)
 H_d = [Hsys,[0.*sigmax(), drive]]
 resultHEOM = HEOMSolver(H_d, bath, NC, options=optionsODE)
 outputnoDD  = resultHEOM.run(initial_state2,tlist2)
-
 ```
 
 ```{code-cell} ipython3
-
 
 
 def driveslow(t):
@@ -160,7 +153,6 @@ H_d = [Hsys,[0.*sigmax(), driveslow]]
 resultHEOM = HEOMSolver(H_d, bath, NC, options=optionsODE)
 outputnoDDslow  = resultHEOM.run(initial_state2,tlist2)
 
-
 ```
 
 ```{code-cell} ipython3
@@ -180,7 +172,6 @@ matplotlib.rcParams['text.usetex'] = False
 ```
 
 ```{code-cell} ipython3
-
 fig, axes = plt.subplots(2, 1, sharex=False, figsize=(12,10))
 
 
@@ -368,7 +359,6 @@ def gather_data(lam2, NC2):
 P12_opt_gamma_plot_001, P12_eq_gamma_plot_001 = gather_data(0.01,4)
 P12_opt_gamma_plot_0005, P12_eq_gamma_plot_0005 = gather_data(0.005,4)
 P12_opt_gamma_plot_00005, P12_eq_gamma_plot_00005 = gather_data(0.0005,4)
-
 ```
 
 ```{code-cell} ipython3

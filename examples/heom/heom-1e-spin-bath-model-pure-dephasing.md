@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-# Example 1c: Spin-Bath model (pure dephasing)
+# Example 1e: Spin-Bath model (pure dephasing)
 
 ### Introduction
 
