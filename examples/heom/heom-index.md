@@ -16,7 +16,7 @@ kernelspec:
 
 The "hierarchical equations of motion" (HEOM) method is a powerful numerical approach to solve the dynamics and steady-state of a quantum system coupled to a non-Markovian and non-perturbative environment. Originally developed in the context of physical chemistry, it has also been extended and applied to problems in solid-state physics, optics, single-molecule electronics, and biological physics.
 
-QuTiP's implementation of the HEOM is described in detail in [https://arxiv.org/abs/2010.10806].
+QuTiP's implementation of the HEOM is described in detail in https://arxiv.org/abs/2010.10806.
 
 This collection of examples from the paper illustrates how to use QuTiP's HEOM to model and investigate the dynamics of a variety of systems coupled to bosonic or fermionic baths.
 
