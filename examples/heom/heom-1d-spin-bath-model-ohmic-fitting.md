@@ -32,7 +32,7 @@ In the example below we show how model an Ohmic environment with exponential cut
 
 * Second, we evaluate the correlation functions, and fit those with a certain choice of exponential functions.
 
-In each case we will use the fit parameters to determine the correlation function expansion co-efficients needed to construct a description of the bath (i.e. a `BosonicBath` object) to supply to the `HEOMSolver` so that we can solve for the system dynamics. 
+In each case we will use the fit parameters to determine the correlation function expansion co-efficients needed to construct a description of the bath (i.e. a `BosonicBath` object) to supply to the `HEOMSolver` so that we can solve for the system dynamics.
 
 ```{code-cell} ipython3
 %pylab inline
@@ -182,6 +182,12 @@ def ohmic_correlation(t, alpha, wc, beta, s=1):
 def ohmic_spectral_density(w, alpha, wc):
     """ The Ohmic bath spectral density as a function of w (and the bath parameters). """
     return w * alpha * e**(-w / wc)
+```
+
+```{code-cell} ipython3
+def ohmic_power_spectrum(w, alpha, wc, beta):
+    """ The Ohmic bath power spectrum as a function of w (and the bath parameters). """
+    return w * alpha * e**(-abs(w) / wc) * ((1 / (e**(w * beta) - 1)) + 1)
 ```
 
 Finally, let's set the bath parameters we will work with and write down some measurement operators:
@@ -342,7 +348,7 @@ def plot_power_spectrum(alpha, wc, beta, lam, gamma, w0, save=True):
     """ Plot the power spectrum of a fit against the actual power spectrum. """
     w = np.linspace(-10, 10, 50000)
 
-    s_orig = w * alpha * e**(-abs(w) / wc) * ((1 / (e**(w * beta) - 1)) + 1)
+    s_orig = ohmic_power_spectrum(w, alpha=alpha, wc=wc, beta=beta)
     s_fit = spectral_density_approx(w, lam, gamma, w0) * ((1 / (e**(w * beta) - 1)) + 1)
     
     fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,8))
@@ -523,7 +529,8 @@ def fit_correlation_imag(C, t, wc, N):
 ```
 
 ```{code-cell} ipython3
-t = np.linspace(0, 1, 1000) + np.linspace(1, 15, 1000)  # capture both long and short timescales
+# capture both long and short timescales:
+t = np.concatenate([np.linspace(0, 1, 2000), np.linspace(1, 25, 1000)])
 C = ohmic_correlation(t, alpha=alpha, wc=wc, beta=beta)
 
 params_k_real = [
@@ -570,7 +577,7 @@ def matsubara_coefficients_from_corr_fit_real(lam, gamma, w0):
 
 def matsubara_coefficients_from_corr_fit_imag(lam, gamma, w0):
     """ Return the matsubara coefficients for the imaginary part of the correlation function. """
-    ckAI = [-0.5j * x for x in lam]  # he 0.5 is from the sine
+    ckAI = [-0.5j * x for x in lam]  # the 0.5 is from the sine
     ckAI.extend(np.conjugate(ckAI))  # extend the list with the complex conjugates
     
     vkAI = [-x - 1.0j * y for x, y in zip(gamma, w0)]
@@ -582,32 +589,6 @@ def matsubara_coefficients_from_corr_fit_imag(lam, gamma, w0):
 ```{code-cell} ipython3
 ckAR, vkAR = matsubara_coefficients_from_corr_fit_real(*params_k_real[-1])
 ckAI, vkAI = matsubara_coefficients_from_corr_fit_imag(*params_k_imag[-1])
-```
-
-```{code-cell} ipython3
-def spectrum_approx(w, ck, vk):
-    """
-    Calculates the approximate Matsubara correlation spectrum
-    from ck and vk.
-
-    Parameters
-    ==========
-
-    w: np.ndarray
-        A 1D numpy array of frequencies.
-
-    ck: float
-        The coefficient of the exponential function.
-
-    vk: float
-        The frequency of the exponential function.
-    """
-    sw = []
-    for kk,ckk in enumerate(ck): 
-        sw.append((ckk*(real(vk[kk]))/((w-imag(vk[kk]))**2+(real(vk[kk])**2))))
-    return sw
-
-# TODO: Is this still needed in the end?
 ```
 
 ```{code-cell} ipython3
@@ -624,8 +605,14 @@ def correlation_approx_matsubara(t, ck, vk):
 ```
 
 ```{code-cell} ipython3
-yR = correlation_approx_matsubara(t, ckAR, vkAR)
-yI = correlation_approx_matsubara(t, ckAI, vkAI)
+def corr_spectrum_approx(w, ckAR, vkAR, ckAI, vkAI):
+    """ Calculates the approximate Matsubara correlation spectrum from ck and vk. """
+    J = np.zeros(len(w), dtype=np.complex128)
+    for ck, vk in zip(ckAR, vkAR):
+        J += ck * np.real(vk) / ((w - np.imag(vk))**2 + (np.real(vk)**2))
+    for ck, vk in zip(ckAI, vkAI):
+        J += 1.0j * ck * np.real(vk) / ((w - np.imag(vk))**2 + (np.real(vk)**2))
+    return np.real(J)
 ```
 
 ```{code-cell} ipython3
@@ -648,18 +635,18 @@ set_paper_figure_rcparams()
 ```
 
 ```{code-cell} ipython3
-def plot_matsubara_correlation_fit_vs_actual(t, C, yR, yI):
-    fig = plt.figure(figsize=(12,10))
+def plot_matsubara_correlation_fit_vs_actual(t, C, ckAR, vkAR, ckAI, vkAI):
+    fig = plt.figure(figsize=(12, 10))
     grid = plt.GridSpec(2, 2, wspace=0.4, hspace=0.3)
 
     # C_R(t)
     
+    yR = correlation_approx_matsubara(t, ckAR, vkAR)
+
     axes1 = fig.add_subplot(grid[0, 0])
-    axes1.set_yticks([0., 1.])
-    axes1.set_yticklabels([0, 1]) 
 
     axes1.plot(t, np.real(C), "r", linewidth=3, label="Original")
-    axes1.plot(t, yR, "g", dashes=[3, 3], linewidth=2, label="Reconstructed")
+    axes1.plot(t, np.real(yR), "g", dashes=[3, 3], linewidth=2, label="Reconstructed")
 
     axes1.legend(loc=0)
     axes1.set_ylabel(r'$C_R(t)$', fontsize=28)
@@ -670,34 +657,32 @@ def plot_matsubara_correlation_fit_vs_actual(t, C, yR, yI):
 
     # C_I(t)
 
+    yI = correlation_approx_matsubara(t, ckAI, vkAI)
+    
     axes2 = fig.add_subplot(grid[0, 1])
-    axes2.set_yticks([0., -0.4])
-    axes2.set_yticklabels([0, -0.4])
 
     axes2.plot(t, np.imag(C), "r", linewidth=3, label="Original")
-    axes2.plot(t, yI, "g", dashes=[3, 3], linewidth=2, label="Reconstructed")
+    axes2.plot(t, np.real(yI), "g", dashes=[3, 3], linewidth=2, label="Reconstructed")
 
     axes2.legend(loc=0)
-    axes2.set_ylabel(r'$C_I(t)$',fontsize=28)
-    axes2.set_xlabel(r'$t\;\omega_c$',fontsize=28)
+    axes2.set_ylabel(r'$C_I(t)$', fontsize=28)
+    axes2.set_xlabel(r'$t\;\omega_c$', fontsize=28)
     axes2.locator_params(axis='y', nbins=4)
     axes2.locator_params(axis='x', nbins=4)
     axes2.text(12.5, -0.2, "(b)", fontsize=28)
-
-    return
-
-    # TODO: pass in data for J(w) and S(w) and add these plots back
     
     # J(w)    
 
+    w = np.linspace(0, 25, 20000)
+
+    J_orig = ohmic_spectral_density(w, alpha=alpha, wc=wc)
+    J_fit = corr_spectrum_approx(w, ckAR, vkAR, ckAI, vkAI)
+
     axes3 = fig.add_subplot(grid[1, 0])
-    axes3.set_yticks([0., .5, 1])
-    axes3.set_yticklabels([0, 0.5, 1])
 
-    axes3.plot(wlist, J,  "r",linewidth=3,label="$J(\omega)$ original")
-    y = checker(wlist, popt1[3],4)
-    axes3.plot(wlist,  y,  "g", dashes=[3,3], linewidth=2, label="$J(\omega)$ Fit $k_J = 4$")
-
+    axes3.plot(w, J_orig, "r", linewidth=3, label="$J(\omega)$ original")
+    axes3.plot(w, J_fit, "g", dashes=[3, 3], linewidth=2, label="$J(\omega)$ Fit $k_J = 4$")
+    
     axes3.legend(loc=0)
     axes3.set_ylabel(r'$J(\omega)$', fontsize=28)
     axes3.set_xlabel(r'$\omega/\omega_c$', fontsize=28)
@@ -707,21 +692,19 @@ def plot_matsubara_correlation_fit_vs_actual(t, C, yR, yI):
 
     # S(w)
 
-    wlist2 = np.linspace(-2*pi*4,2 * pi *4 , 50000)
-    wlist2 = np.linspace(-7,7 , 50000)
-
-    s1 =  [w * alpha * e**(-abs(w)/wc) *  ((1/(e**(w/T)-1))+1) for w in wlist2]
-    s2 = [sum([(2* lam[kk] * gamma[kk] * (w)/(((w+w0[kk])**2 + (gamma[kk]**2))*((w-w0[kk])**2 + (gamma[kk]**2)))) * ((1/(e**(w/T)-1))+1)  for kk,lamkk in enumerate(lam)]) for w in wlist2]
+    # avoid the pole in the fit around zero:
+    w = np.concatenate([np.linspace(-10, -0.1, 5000), np.linspace(0.1, 10, 5000)])
+    
+    s_orig = ohmic_power_spectrum(w, alpha=alpha, wc=wc, beta=beta)
+    s_fit = corr_spectrum_approx(w, ckAR, vkAR, ckAI, vkAI) * ((1 / (e**(w * beta) - 1)) + 1)
 
     axes4 = fig.add_subplot(grid[1, 1])
-    axes4.set_yticks([0., 1])
-    axes4.set_yticklabels([0, 1])
-    axes4.plot(wlist2, s1,"r",linewidth=3,label="Original")
-    axes4.plot(wlist2, s2, "g", dashes=[3,3], linewidth=2,label="Reconstructed")
+    axes4.plot(w, s_orig,"r",linewidth=3,label="Original")
+    axes4.plot(w, s_fit, "g", dashes=[3, 3], linewidth=2,label="Reconstructed")
 
     axes4.legend()
-    axes4.set_xlabel(r'$\omega/\omega_c$', fontsize=28)
     axes4.set_ylabel(r'$S(\omega)$', fontsize=28)
+    axes4.set_xlabel(r'$\omega/\omega_c$', fontsize=28)
     axes4.locator_params(axis='y', nbins=4)
     axes4.locator_params(axis='x', nbins=4)
     axes4.text(4., 1.2, "(d)", fontsize=28)
@@ -729,45 +712,47 @@ def plot_matsubara_correlation_fit_vs_actual(t, C, yR, yI):
     if save:
         fig.savefig("figures/figFiJspec.pdf")
 
-        
-plot_matsubara_correlation_fit_vs_actual(t, C, yR, yI)
+
+plot_matsubara_correlation_fit_vs_actual(t, C, ckAR, vkAR, ckAI, vkAI)
 ```
 
 ```{code-cell} ipython3
-### DONE UP TO HERE ###
-```
-
-Now we run the HEOM with the correlations functions from the fit spectral densities.
-
-```{code-cell} ipython3
-#tlist4 = np.linspace(0, 50, 1000)
-
-tlist4 = np.linspace(0, 4*pi/Del, 600)
-tlist4 = np.linspace(0, 30*pi/Del, 600)
-
-rho0 = basis(2,0) * basis(2,0).dag()   
-
-
-import time
-start = time.time()
-resultFit = HEOMFit.run(rho0, tlist4)
-
-end = time.time()
-print(end - start)
+### TODO: THE J(w) and S(w) plots above are incorrect, but I don't know what is wrong. :|
 ```
 
 ```{code-cell} ipython3
-# Calculate expectation values in the bases
-P11exp11K3NK2TL = expect(resultFit.states, P11p)
-P22exp11K3NK2TL = expect(resultFit.states, P22p)
-P12exp11K3NK2TL = expect(resultFit.states, P12p)
+options = Options(nsteps=15000, store_states=True, rtol=1e-12, atol=1e-12, method="bdf")
+# This problem is a little stiff, so we use  the BDF method to solve the ODE ^^^
+
+tlist = np.linspace(0, 30 * pi / Del, 600)
+
+with timer("RHS construction time"):
+    bath = BosonicBath(Q, ckAR, vkAR, ckAI, vkAI)
+    HEOM_corr_fit = HEOMSolver(Hsys, bath, max_depth=5, options=options)
+    
+with timer("ODE solver time"):
+    results_corr_fit = HEOM_corr_fit.run(rho0, tlist)
 ```
 
-Now we try the alternative, fitting the correlation functions directly
+```{code-cell} ipython3
+plot_result_expectations([
+    (results_corr_fit, P11p, 'b', "P11 (correlation fit)"),
+    (results_corr_fit, P22p, 'r', "P22 (correlation fit)"),
+    (results_corr_fit, P12p, 'g', "P12 (correlation fit)"),
+]);
+```
 
-+++
+```{code-cell} ipython3
+### DECIDE WHAT TO DO WITH THE PLOTS, ETC AFTER HERE ###
+```
 
-We can convert the fitted correlations functions into a power spectrum, and compare to the original one
+```{code-cell} ipython3
+XXX
+```
+
+```{code-cell} ipython3
+
+```
 
 ```{code-cell} ipython3
 wlist2 = np.linspace(-7,7 , 50000)
@@ -991,8 +976,4 @@ axes.legend(loc=0)
 from qutip.ipynbtools import version_table
 
 version_table()
-```
-
-```{code-cell} ipython3
-
 ```
