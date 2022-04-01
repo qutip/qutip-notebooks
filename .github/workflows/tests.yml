@@ -20,6 +20,6 @@ jobs:
     - name: Run tests
       timeout-minutes: 60
       run: |
-        jupyter kernel
+        jupyter kernel &
         pytest -Werror --strict-config --strict-markers --timeout=300 --durations=0 --durations-min=1.0 --verbosity=1 tests
         
