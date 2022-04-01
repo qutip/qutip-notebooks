@@ -25,15 +25,15 @@ def get_notebook_errors(path):
 
 
 def test_piqs_superradiance():
-    errors = get_notebook_errors('../examples/piqs_superradiance.ipynb')
+    errors = get_notebook_errors('examples/piqs_superradiance.ipynb')
     assert not errors
 
 def test_piqs_entropy_purity():
-    errors = get_notebook_errors('../examples/piqs-entropy_purity.ipynb')
+    errors = get_notebook_errors('examples/piqs-entropy_purity.ipynb')
     assert not errors
 
 def test_measure_trajectories_cat_kerrs():
-    errors = get_notebook_errors('../examples/measures-trajectories-cats-kerr.ipynb')
+    errors = get_notebook_errors('examples/measures-trajectories-cats-kerr.ipynb')
     assert not errors
 
 
