@@ -2,19 +2,25 @@ name: Tests
 
 on:
   [push, pull_request]
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   pytests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
+    - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: '3.9'
+        auto-update-conda: true
+        python-version: "3.9"
 
     - name: Install QuTiP
 
       run: |
-        python -m pip install qutip
+        conda env update -n base --file environment.yml
         python -m pip install pytest nbformat nbconvert pytest-timeout jupyter
 
     - name: Run tests
