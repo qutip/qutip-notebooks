@@ -14,18 +14,16 @@ jobs:
     - uses: actions/checkout@v3
     - uses: conda-incubator/setup-miniconda@v2
       with:
+        activate-environment: test
+        environment-file: environment.yml
+        python-version: 3.8
+        auto-activate-base: false
         auto-update-conda: true
-        python-version: "3.9"
-
-    - name: Install QuTiP
-
-      run: |
-        conda env update -n base --file environment.yml
-        python -m pip install pytest nbformat nbconvert pytest-timeout jupyter
 
     - name: Run tests
       timeout-minutes: 60
       run: |
         jupyter kernel &
-        pytest -Werror --strict-config --strict-markers --timeout=300 --durations=0 --durations-min=1.0 --verbosity=1 tests
+        conda install pytest
+        pytest tests
         
