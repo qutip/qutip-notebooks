@@ -22,6 +22,7 @@ jobs:
     - name: Run tests
       timeout-minutes: 60
       run: |
+        conda install jupyter nbformat nbconvert
         jupyter kernel &
         conda install pytest
         pytest tests
