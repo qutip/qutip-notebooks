@@ -19,8 +19,9 @@ jobs:
         auto-activate-base: false
         auto-update-conda: true
     - name: Install LaTeX
-      - apt-get install texlive-full
-      - apt-get install imagemagick
+      run: |
+        apt-get install texlive-full
+        apt-get install imagemagick
 
     - name: Run tests
       timeout-minutes: 60
