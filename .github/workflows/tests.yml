@@ -20,8 +20,8 @@ jobs:
         auto-update-conda: true
     - name: Install LaTeX
       run: |
-        apt-get install texlive-full
-        apt-get install imagemagick
+        sudo apt-get install -y texlive-full
+        sudo apt-get install -y imagemagick
 
     - name: Run tests
       timeout-minutes: 60
