@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  [push, pull_request]
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  pytests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: test
+        environment-file: environment.yml
+        auto-activate-base: false
+        auto-update-conda: true
+    - name: Install LaTeX
+      run: |
+        sudo apt-get install -y texlive-full
+        sudo apt-get install -y imagemagick
+
+    - name: Run tests
+      timeout-minutes: 60
+      run: |
+        conda install jupyter nbformat nbconvert
+        jupyter kernel &
+        conda install pytest
+        pytest tests
+        
