@@ -27,5 +27,4 @@ jobs:
       timeout-minutes: 60
       run: |
         conda install pytest nbmake
-        pytest --nbmake tests/nonmarkov-transfer-tensor-method.ipynb
-        
+        pytest --nbmake examples/*.ipynb
