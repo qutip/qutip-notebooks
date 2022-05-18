@@ -18,10 +18,6 @@ jobs:
         environment-file: environment.yml
         auto-activate-base: false
         auto-update-conda: true
-    - name: Install LaTeX
-      run: |
-        sudo apt-get install -y texlive-full
-        sudo apt-get install -y imagemagick
 
     - name: Run tests
       timeout-minutes: 60
