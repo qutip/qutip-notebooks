@@ -26,8 +26,6 @@ jobs:
     - name: Run tests
       timeout-minutes: 60
       run: |
-        conda install jupyter nbformat nbconvert
-        jupyter kernel &
-        conda install pytest
-        pytest tests
+        conda install pytest nbmake
+        pytest --nbmake tests/nonmarkov-transfer-tensor-method.ipynb
         
