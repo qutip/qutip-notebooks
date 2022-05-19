@@ -32,4 +32,4 @@ jobs:
         conda install jupyter nbformat nbconvert
         jupyter kernel &
         conda install pytest nbmake
-        pytest --nbmake examples/nonmarkov-transfer-tensor-method.ipynb
+        pytest --nbmake examples/*.ipynb
