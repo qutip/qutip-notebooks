@@ -27,7 +27,7 @@ jobs:
         pip install -r requirements.txt
         python setup.py develop
     - name: Run tests
-      timeout-minutes: 60
+      timeout-minutes: 180
       run: |
         conda install jupyter nbformat nbconvert
         jupyter kernel &
