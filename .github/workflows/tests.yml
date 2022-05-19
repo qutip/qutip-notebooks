@@ -19,7 +19,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: test
-        environment-file: test_environment.yml
+        environment-file: environment.yml
         auto-activate-base: false
         auto-update-conda: true
 
