@@ -23,8 +23,9 @@ jobs:
       run: |
         sudo apt-get install git
         git clone https://github.com/qutip/qutip.git
-        pip install -r qutip/requirements.txt
-        python qutip/setup.py develop
+        cd qutip
+        pip install -r requirements.txt
+        python setup.py develop
     - name: Run tests
       timeout-minutes: 60
       run: |
