@@ -12,19 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        repository: qutip/qutip
-        path: qutip
-        ref: master
     - uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: test
-        environment-file: environment.yml
+        environment-file: test_environment.yml
         auto-activate-base: false
         auto-update-conda: true
 
     - name: Install QuTiP
       run: |
+        sudo apt-get install git
+        git clone https://github.com/qutip/qutip.git
         pip install -r qutip/requirements.txt
         python qutip/setup.py develop
     - name: Run tests
