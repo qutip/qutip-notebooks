@@ -19,13 +19,19 @@ jobs:
         auto-activate-base: false
         auto-update-conda: true
 
-    - name: Install QuTiP
+    - name: Install QuTiP and QuTiP-QIP
       run: |
         sudo apt-get install git
+        pip install --upgrade pip
         git clone https://github.com/qutip/qutip.git
         cd qutip
         pip install -r requirements.txt
         python setup.py develop
+        cd ..
+        git clone https://github.com/qutip/qutip-qip.git
+        cd qutip-qip
+        pip install -e .
+
     - name: Run tests
       timeout-minutes: 180
       run: |
