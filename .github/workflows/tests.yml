@@ -32,8 +32,12 @@ jobs:
         cd qutip-qip
         pip install -e .
 
+    - name: Install LaTeX and ImageMagick
+      run: |
+        - sudo apt-get install texlive-full
+        - sudo apt-get install imagemagick
+
     - name: Run tests
-      timeout-minutes: 180
       run: |
         conda install jupyter nbformat nbconvert
         jupyter kernel &
