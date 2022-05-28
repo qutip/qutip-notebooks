@@ -42,4 +42,4 @@ jobs:
         conda install jupyter nbformat nbconvert
         jupyter kernel &
         conda install pytest nbmake
-        pytest --nbmake examples/*.ipynb --nbmake-timeout=3000
+        pytest --nbmake examples/*.ipynb --nbmake-timeout=500
