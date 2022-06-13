@@ -50,9 +50,9 @@ questions, or your proposed changes to our
 [QuTiP discussion group](http://groups.google.com/group/qutip).
 
 All contributions are acknowledged in the
-[contributors](http://github.com/qutip/qutip-doc/blob/master/contributors.rst)
+[contributors](https://github.com/qutip/qutip/blob/master/doc/contributors.rst)
 section in the documentation.
 
 Note that all notebook contributions must have a ```qutip.about()``` line at the end for reproducibility purposes. It is also encouraged to add the notebook to the [tutorial page](http://qutip.org/tutorials.html) and the [index](index.ipynb).
 
-For more information, including technical advice, please see [Contributing to QuTiP development](https://github.com/qutip/qutip-doc/blob/master/qutip_dev_contrib.md).
+For more information, including technical advice, please see [Contributing to QuTiP development](https://qutip.org/docs/latest/development/contributing.html).
